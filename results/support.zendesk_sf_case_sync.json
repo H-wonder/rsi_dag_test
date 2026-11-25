@@ -9,7 +9,7 @@
   "assertions_passed": 16,
   "assertions_total": 16,
   "iterations": 5,
-  "elapsed_seconds": 0.07,
+  "elapsed_seconds": 0.05,
   "run": {
     "task": "support.zendesk_sf_case_sync",
     "bridge": "http://127.0.0.1:8765",
@@ -28,7 +28,7 @@
             "i": 0,
             "item": "tkt_101",
             "status": "ok",
-            "ms": 4
+            "ms": 3
           },
           {
             "i": 1,
@@ -40,7 +40,7 @@
             "i": 2,
             "item": "tkt_107",
             "status": "ok",
-            "ms": 4
+            "ms": 2
           },
           {
             "i": 3,
@@ -52,7 +52,7 @@
             "i": 4,
             "item": "tkt_111",
             "status": "ok",
-            "ms": 2
+            "ms": 1
           }
         ],
         "checkpoints": [
@@ -89,6 +89,7 @@
         "skipped": 0
       }
     },
+    "llmCalls": 0,
     "outputs": {},
     "score": {
       "score": 1.0,
@@ -651,5 +652,5 @@
       }
     ]
   },
-  "timestamp": "2026-11-25T19:29:25"
+  "timestamp": "2026-11-25T19:49:38"
 }
