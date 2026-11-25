@@ -189,6 +189,32 @@ FlowEngine.instance().register("result", run.toJSONString());
 - skill flow：节点有 `skillFlow` → `FlowEngine.run(skillFlow)`，由引擎执行
   [FlowCodeFetch.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Skill/code/FlowCodeFetch.java)。
 
+### 2.5 bridge 到底在哪被调用
+
+只有 **取数/动作/编码/取分** 会碰 bridge；循环、分支、过滤、计算全在 Java 里。
+
+| 调用点 | 文件:行 | 做什么 |
+|---|---|---|
+| `fetch` / `action` 节点 | [StructureExecutor.java#L230](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L230) | `bridge.call(tool, args)` → `POST /tool` |
+| `encode` 节点 | [StructureExecutor.java#L273](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L273) | `base64_encode` 也走 bridge |
+| 执行完取分 | [FlowCodeRun.java#L53](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java#L53) | `GET /score` |
+| skill flow 的取数 | [FlowCodeFetch.java#L36](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Skill/code/FlowCodeFetch.java#L36) | 由引擎执行的 `api_fetch` |
+
+bridge 地址解析顺序：[StructureExecutor.java:50](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L50)
+
+```text
+structure.meta.bridge
+  → -Dbridge.url
+  → 环境变量 BRIDGE_URL
+  → BridgeClient 默认 http://127.0.0.1:8765
+```
+
+HTTP 细节在 [BridgeClient.java:38](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java#L38)（`/tool`）和
+[:78](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java#L78)（`/score`）。
+
+> 注意：`FlowCodeFetch` 用的是 `new BridgeClient(null)`，即默认 `8765`；
+> 如果 bridge 换端口，skill flow 不会读 `meta.bridge`，这是一个已知限制。
+
 ---
 
 ## 3. `LoopRunner` 内部（最核心）
