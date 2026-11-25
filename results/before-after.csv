@@ -12,3 +12,5 @@ operations.space_utilization_analysis,operations,P2,0.6,0.8,4,5,3,0.02
 operations.space_utilization_analysis,operations,P2,0.6,0.8,4,5,3,0.02
 operations.space_utilization_analysis,operations,P2,0.6,0.8,4,5,3,0.02
 operations.space_utilization_analysis,operations,P2,0.6,1.0,5,5,3,0.03
+hr.zoom_orientation_sessions,hr,P5,0.6666666666666666,0.0,0,6,3,0.02
+hr.zoom_orientation_sessions,hr,P5,0.6666666666666666,1.0,6,6,3,0.02

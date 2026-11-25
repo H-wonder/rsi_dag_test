@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "task": "hr.zoom_orientation_sessions",
+    "domain": "hr",
+    "pattern": "P5",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "5 人 cohort：排除延期/撤回；为 I-9 已提交者建 Zoom 会议并注册、发确认信；未提交者只上报 HR Director 并通知本人，不直接取消"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_orientation/values/Cohort March 24!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "cohort"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "cohort",
+      "when": "not item.Notes.toLowerCase().contains('moved') and not item.Notes.toLowerCase().contains('rescinded')",
+      "out": "eligible"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "eligible",
+      "itemVar": "c",
+      "body": [
+        "route"
+      ],
+      "maxIterations": 20,
+      "onError": "continue",
+      "checkpoint": {
+        "every": 1,
+        "keep": 20
+      }
+    },
+    {
+      "id": "route",
+      "type": "branch",
+      "cases": [
+        {
+          "when": "c.I_9_Submitted == 'Yes'",
+          "body": [
+            "meeting",
+            "registrant",
+            "enc_yes",
+            "send_yes"
+          ]
+        },
+        {
+          "when": "c.I_9_Submitted == 'No'",
+          "body": [
+            "enc_dir",
+            "send_dir",
+            "enc_pend",
+            "send_pend"
+          ]
+        }
+      ],
+      "default": []
+    },
+    {
+      "id": "meeting",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://api.zoom.us/v2/users/me/meetings",
+        "body": {
+          "topic": "Orientation - {{c.Name}}",
+          "type": 2,
+          "start_time": "{{c.Start_Date}}T10:00:00Z",
+          "duration": "{{c.Location == 'Remote' ? 120 : 60}}",
+          "timezone": "UTC",
+          "settings": {
+            "approval_type": 0
+          }
+        }
+      },
+      "out": "meeting"
+    },
+    {
+      "id": "registrant",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://api.zoom.us/v2/meetings/{{meeting.id}}/registrants",
+        "body": {
+          "email": "{{c.Email}}",
+          "first_name": "{{c.Name}}",
+          "last_name": "Hire"
+        }
+      }
+    },
+    {
+      "id": "enc_yes",
+      "type": "encode",
+      "value": "Your orientation is confirmed. Date: {{c.Start_Date}}. Duration: {{c.Location == 'Remote' ? '2 hour' : '1 hour'}}.",
+      "out": "yes_b64"
+    },
+    {
+      "id": "send_yes",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{c.Email}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Orientation - {{c.Start_Date}}"
+              }
+            ],
+            "body": {
+              "data": "{{yes_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_dir",
+      "type": "encode",
+      "value": "{{c.Name}} ({{c.Email}}) has not submitted the I-9 form; orientation is pending your decision.",
+      "out": "dir_b64"
+    },
+    {
+      "id": "send_dir",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "hr-director@company.example.com"
+              },
+              {
+                "name": "Subject",
+                "value": "Orientation pending I-9 - {{c.Name}}"
+              }
+            ],
+            "body": {
+              "data": "{{dir_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_pend",
+      "type": "encode",
+      "value": "Your orientation is on hold pending I-9 submission.",
+      "out": "pend_b64"
+    },
+    {
+      "id": "send_pend",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{c.Email}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Orientation pending I-9"
+              }
+            ],
+            "body": {
+              "data": "{{pend_b64}}"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch"
+    ],
+    [
+      "fetch",
+      "rows"
+    ],
+    [
+      "rows",
+      "pick"
+    ],
+    [
+      "pick",
+      "loop1"
+    ]
+  ]
+}

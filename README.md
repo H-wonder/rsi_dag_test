@@ -40,9 +40,10 @@ patch/       四个仓库的 diff 镜像
 - [x] 第 4 题：`hr.policy_update_distribution`，0.25 → **1.0**（4/4，2 轮）
 - [x] 第 5 题：`sales.overdue_followup_flag`，0.44 → **1.0**（9/9，7 轮，含分支/join/state）
 - [x] 第 6 题：`operations.space_utilization_analysis`，0.60 → **1.0**（5/5，扫描 41 行）
+- [x] 第 7 题：`hr.zoom_orientation_sessions`，0.67 → **1.0**（6/6，3 轮，I-9 分支）
 - [x] 平台闭环：画布 → 结构 → 后端，Monday 1.0，见 [docs/07-platform.md](docs/07-platform.md)
 - [x] 长序列：120 轮压力测试 + 41 行真实任务，见 [docs/08-long-sequence.md](docs/08-long-sequence.md)
-- [ ] 10 题前后对照（6/10）
+- [ ] 10 题前后对照（7/10）
 - [ ] 消融与迁移
 - [ ] 报告
 

