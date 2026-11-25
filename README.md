@@ -30,11 +30,12 @@ patch/       四个仓库的 diff 镜像
 ## 状态
 
 - [x] 循环语义契约（01）
-- [ ] 节点分类（02）
-- [ ] 模式库（03）
-- [ ] 问题清单
-- [ ] 解释器实现
-- [ ] 10 题前后对照
+- [x] 节点分类（02）
+- [x] 模式库（03）
+- [x] 问题清单（12 题）
+- [x] 解释器：loop / sequence / fetch / action / filter / map / aggregate / rows / assert
+- [x] 第 1 题跑通：`hr.monday_onboarding_pipeline`，0.0 → **1.0**（4/4 断言，2 轮）
+- [ ] 10 题前后对照（1/10）
 - [ ] 消融与迁移
 - [ ] 报告
 

@@ -1,0 +1,2 @@
+task,domain,pattern,baseline_score,structured_score,assertions_passed,assertions_total,iterations,elapsed_seconds
+hr.monday_onboarding_pipeline,hr,P1,0.0,1.0,4,4,2,0.01

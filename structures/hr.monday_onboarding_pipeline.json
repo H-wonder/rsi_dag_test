@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "task": "hr.monday_onboarding_pipeline",
+    "domain": "hr",
+    "pattern": "P1",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "读取新员工表，过滤 Contractor 和备注延期者，逐人创建 Monday item（item_name 含姓名与部门）"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_march_hires/values/Starting Week of March 24!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "hires"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "hires",
+      "when": "item.Type == 'Full-time' and item.Notes == ''",
+      "out": "due"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "due",
+      "itemVar": "h",
+      "body": ["create"],
+      "maxIterations": 10,
+      "onError": "continue",
+      "state": {
+        "created": 0
+      }
+    },
+    {
+      "id": "create",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://api.monday.com/v2/items:create",
+        "body": {
+          "board_id": "board_onboarding",
+          "item_name": "{{h.Name}} - {{h.Department}}",
+          "column_values": {
+            "date": "{{h['Start Date']}}",
+            "status": "Not Started"
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch"],
+    ["fetch", "rows"],
+    ["rows", "pick"],
+    ["pick", "loop1"]
+  ]
+}

@@ -57,6 +57,7 @@
         { "$ref": "#/$defs/branchNode" },
         { "$ref": "#/$defs/loopNode" },
         { "$ref": "#/$defs/fetchNode" },
+        { "$ref": "#/$defs/rowsNode" },
         { "$ref": "#/$defs/filterNode" },
         { "$ref": "#/$defs/mapNode" },
         { "$ref": "#/$defs/aggregateNode" },
@@ -144,6 +145,19 @@
             "out": { "type": "string" }
           },
           "required": ["url", "out"]
+        }
+      ]
+    },
+    "rowsNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "rows" },
+            "items": { "$ref": "#/$defs/expr" },
+            "out": { "type": "string" }
+          },
+          "required": ["items", "out"]
         }
       ]
     },
