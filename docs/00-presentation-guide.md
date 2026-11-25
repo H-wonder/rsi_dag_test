@@ -40,17 +40,23 @@
 
 ### 2.2 解释器：执行结构
 
-后端 `FlowCodeRun` 收到结构 JSON，交给 `StructureExecutor`：
+后端 [FlowCodeRun.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java)
+收到结构 JSON，交给
+[StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java)：
 
 - 节点：`fetch / rows / filter / map / aggregate / loop / branch / action / encode /
   compute / datediff / businessdays / join / collect / first / assert`；
 - 表达式：JEXL；
 - 动作：bridge `/tool`（Gmail、Sheets、Salesforce、Zoom、Mailchimp、Notion、Slack、Zoho…）；
-- skill flow：`fetch` 节点可声明 `skillFlow=@.../FLOW_SKILL_FETCH`，由 rsi-flow 引擎执行。
+- skill flow：`fetch` 节点可声明 `skillFlow=@.../FLOW_SKILL_FETCH`，由 rsi-flow 引擎执行；
+  实现见 [FlowCodeFetch.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Skill/code/FlowCodeFetch.java)
+  与 [flow-skill-fetch.json](../../rsi-flow-spring-boot/core-flow/src/main/resources/flow/Skills/flow-skill-fetch.json)。
 
 ### 2.3 平台：画布 → 结构
 
+- 页面：[Login/index.tsx](../../rsi-flow-platform/src/xpages/Login/index.tsx)；
 - 下拉框/`?task=` 切换 10 个任务；
+- 生成器：[buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx)；
 - 每个元素 `pendant.node` 存节点，`pendant.meta` 存任务信息；
 - 链路边变成 `edges`；循环体/分支体用 `edge:false` 的虚线；
 - 点“运行” → `getView` → 结构 JSON → 后端。
@@ -58,7 +64,7 @@
 
 ### 2.4 证据：10 题、消融、迁移
 
-- 10 题全部 1.0（56/56 断言）；
+- 10 题全部 1.0（56/56 断言），见 [before-after.csv](../results/before-after.csv)；
 - 消融：QB 1.0→0.4，Mailchimp 1.0→0.286；
 - 迁移：Zoho 0.75→1.0、Analyst 0.917→1.0，0 新增节点；
 - 节点：108 实例 / 12 类型 / 92% 复用。
@@ -98,6 +104,29 @@ loop-structures/
 ├── harness/                       运行器、平台批量、统计、导出
 └── schema/structure.schema.json   结构 schema
 ```
+
+### 4.1 代码跳转
+
+| 层 | 文件 | 作用 |
+|---|---|---|
+| 后端入口 | [FlowCodeRun.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java) | 接收 structure，调用解释器 |
+| 解释器 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java) | loop/branch/节点执行 |
+| 表达式 | [Expr.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/Expr.java) | JEXL + `{{}}` 模板 |
+| bridge 客户端 | [BridgeClient.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java) | 调工具 |
+| skill flow | [FlowCodeFetch.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Skill/code/FlowCodeFetch.java)、[flow-skill-fetch.json](../../rsi-flow-spring-boot/core-flow/src/main/resources/flow/Skills/flow-skill-fetch.json) | 引擎执行取数 |
+| 入口 flow | [flow-run.json](../../rsi-flow-spring-boot/core-flow/src/main/resources/flow/Run/flow-run.json) | `FLOW_RUN` 定义 |
+| 页面 | [Login/index.tsx](../../rsi-flow-platform/src/xpages/Login/index.tsx) | 下拉框、运行按钮、getView |
+| 结构→画布 | [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) | nodes/edges → elements/links |
+| 结构数据 | [structures.ts](../../rsi-flow-platform/src/xpages/Login/test/structures.ts) | 10 题结构 |
+| 前端请求 | [Run/index.ts](../../rsi-flow-platform/src/flows/com.horsecoder.common.whuTalent.flowTesting.core/Run/index.ts) | POST `/api/engine/flow` |
+| schema | [structure.schema.json](../schema/structure.schema.json) | 节点/结构约束 |
+| 结构文件 | [structures/](../structures/) | 10 题 + 消融/迁移 |
+| 运行器 | [run_structure.py](../harness/run_structure.py) | 单题跑分 |
+| 平台批量 | [platform_run.py](../harness/platform_run.py) | 10 题 UI 跑分 |
+| 统计 | [node_usage.py](../harness/node_usage.py)、[summarize_results.py](../harness/summarize_results.py) | 节点统计、CSV |
+| 问题生成 | [collect_problems.py](../harness/collect_problems.py) | 从数据集生成 problems.md |
+| 结构导出 | [export_platform_structures.py](../harness/export_platform_structures.py) | JSON → structures.ts |
+| 引擎 DAG | [Executor.java](../../rsi-flow/flow-core/src/main/java/cc/eamon/open/flow/core/stereotype/support/route/Executor.java) | 为什么原生没有循环 |
 
 ## 5. 验收对照表
 
