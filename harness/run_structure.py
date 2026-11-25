@@ -70,7 +70,7 @@ def baseline_score(task: str) -> float | None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--structure", required=True)
-    ap.add_argument("--backend", default="http://127.0.0.1:39911")
+    ap.add_argument("--backend", default="http://127.0.0.1:39910")
     ap.add_argument("--bridge", default="http://127.0.0.1:8765")
     ap.add_argument("--restart-bridge", action="store_true")
     args = ap.parse_args()

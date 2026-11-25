@@ -1,0 +1,16 @@
+{
+  "task": "stress.loop.120",
+  "kind": "synthetic stress test",
+  "structure": "structures/stress.loop.120.json",
+  "status": "OK",
+  "iterations": 120,
+  "succeeded": 120,
+  "failed": 0,
+  "perIteration_entries": 120,
+  "checkpoints_generated_every": 5,
+  "checkpoints_kept": 20,
+  "checkpoint_first_i": 20,
+  "checkpoint_last_i": 115,
+  "elapsed_seconds": 0.12,
+  "timestamp": "2026-11-25T18:35:00"
+}

