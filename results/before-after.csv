@@ -1,3 +1,7 @@
 task,domain,pattern,baseline_score,structured_score,assertions_passed,assertions_total,iterations,elapsed_seconds
 hr.monday_onboarding_pipeline,hr,P1,0.0,1.0,4,4,2,0.01
 finance.qb_invoice_from_orders,finance,P1,0.0,1.0,5,5,3,0.13
+finance.revenue_recognition,finance,P3,0.75,0.0,0,3,2,0.14
+finance.revenue_recognition,finance,P3,0.75,0.0,0,3,2,0.02
+finance.revenue_recognition,finance,P3,0.75,0.0,0,3,2,0.14
+finance.revenue_recognition,finance,P3,0.75,1.0,3,3,2,0.14

