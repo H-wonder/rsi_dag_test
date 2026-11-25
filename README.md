@@ -39,6 +39,7 @@ patch/       四个仓库的 diff 镜像
 - [x] 第 3 题：`finance.revenue_recognition`，0.75 → **1.0**（3/3，2 轮）
 - [x] 第 4 题：`hr.policy_update_distribution`，0.25 → **1.0**（4/4，2 轮）
 - [x] 第 5 题：`sales.overdue_followup_flag`，0.44 → **1.0**（9/9，7 轮，含分支/join/state）
+- [x] 平台闭环：画布 → 结构 → 后端，Monday 1.0，见 [docs/07-platform.md](docs/07-platform.md)
 - [ ] 10 题前后对照（5/10）
 - [ ] 消融与迁移
 - [ ] 报告
