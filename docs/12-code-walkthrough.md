@@ -98,6 +98,16 @@ harness/run_structure.py
 
 **没有改** `rsi-flow` 引擎（`feature-wonder` 与原分支一致）；循环不在引擎里，在解释器里。
 
+### 1.1.1 代码来源说明
+
+`feature-wonder` 基于学长的 `dev_examples`（`5483cf7`）。要区分：
+
+| 来源 | 内容 |
+|---|---|
+| 学长 `dev_examples` | `Skill/code/` 下除 `FlowCodeFetch` 外的 11 个文件；`flow/Skills/` 下除 `flow-skill-fetch.json` 外的 JSON；`Run/code/FlowCodeRun.java` 的骨架；`flow/Run/flow-run.json` |
+| 我们新增 | `Run/structure/` 全部（`StructureExecutor`、`LoopRunner`、`NodeSupport`、`Expr`、`BridgeClient`）；`Skill/code/FlowCodeFetch.java`；`flow/Skills/flow-skill-fetch.json` |
+| 我们修改 | `FlowCodeRun.java` 的方法体（从 demo 分发改为执行结构、取分） |
+
 ### 1.2 前端（`rsi-flow-platform`，分支 `feature-wonder`）
 
 | 文件 | 状态 | 作用 |
