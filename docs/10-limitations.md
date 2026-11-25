@@ -62,10 +62,10 @@
 
 | 设计项 | 状态 | 影响 |
 |---|---|---|
-| `budget.wallClockMs` / `maxFailures` | 未实现 | 只能靠 `maxIterations` 防跑飞 |
-| `EXHAUSTED` 默认失败（`allowPartial`） | 只记录状态 | 超限不会让结构失败 |
-| `retry` | 代码存在，未用真实错误测试 | 瞬时错误恢复未验证 |
-| `while` | 代码存在，10 题未使用 | 条件循环未在真实任务验证 |
+| `budget.wallClockMs` / `maxFailures` | ✅ 已实现并测试 | 见 11-loop-tests |
+| `EXHAUSTED` 默认失败（`allowPartial`） | ✅ 已实现并测试 | 超限会抛错，除非 `allowPartial` |
+| `retry` | ✅ 已测试（断言失败） | 真实网络错误未测 |
+| `while` | ✅ 已测试（3 轮） | 真实任务未用 |
 | 嵌套循环 | 仅 smoke test | 没有真实二维任务 |
 | `resume` | 不做（设计取舍） | 失败只能整体重跑 |
 
