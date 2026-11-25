@@ -15,6 +15,10 @@
    [docs/03-patterns.md](docs/03-patterns.md)；
 5. 12 个失败任务作为验证集，问题清单见 [docs/problems.md](docs/problems.md)。
 
+## 讲解与演示
+
+- 讲解/演示/验收：[docs/00-presentation-guide.md](docs/00-presentation-guide.md)
+
 ## 目录
 
 ```text
