@@ -18,6 +18,7 @@
 ## 讲解与演示
 
 - 讲解/演示/验收：[docs/00-presentation-guide.md](docs/00-presentation-guide.md)
+- **逐行代码走读**：[docs/12-code-walkthrough.md](docs/12-code-walkthrough.md)
 
 ## 目录
 
