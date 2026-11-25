@@ -36,9 +36,16 @@
 
 - `every=1, keep=20`：每轮记录，超过 20 条丢最早的；
 - `every=5, keep=20`：生成 24 条，保留最后 20 条（i=20..115）；
-- 目前只在内存里；**磁盘 JSONL 还没实现**（见 10-limitations）。
+- `checkpoint.file` 落盘：120 轮、every=5 → 内存 20 条，磁盘 24 条（含被环形缓冲淘汰的）。
 
-## 5. 仍未覆盖
+## 5. skill flow
+
+| 用例 | 结果 |
+|---|---|
+| `fetch` 节点声明 `skillFlow=@.../FLOW_SKILL_FETCH` | 引擎执行 `FLOW_CODE_FETCH`，Monday 任务 4/4、1.0 |
+| 结构 | `structures/skill.monday_onboarding_pipeline.json` |
+
+## 6. 仍未覆盖
 
 - `resume`：按设计不做；
 - 嵌套循环：只有 smoke test，没有真实二维任务；

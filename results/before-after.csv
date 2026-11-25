@@ -10,3 +10,4 @@ operations.mailchimp_ecommerce_sync,operations,P5,0.7142857142857143,1.0,7,7,7,0
 operations.space_utilization_analysis,operations,P2,0.6,1.0,5,5,3,0.03
 sales.overdue_followup_flag,sales,P5,0.4444444444444444,1.0,9,9,7,0.15
 ablation.finance.payment_terms_tracking_naive,finance,P5,0.0,0.5714285714285714,4,7,5,0.02
+skill.hr.monday_onboarding_pipeline,hr,P1,0.0,1.0,4,4,2,0.15

