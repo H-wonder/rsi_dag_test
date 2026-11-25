@@ -38,7 +38,8 @@ patch/       四个仓库的 diff 镜像
 - [x] 第 2 题：`finance.qb_invoice_from_orders`，0.0 → **1.0**（5/5，3 轮）
 - [x] 第 3 题：`finance.revenue_recognition`，0.75 → **1.0**（3/3，2 轮）
 - [x] 第 4 题：`hr.policy_update_distribution`，0.25 → **1.0**（4/4，2 轮）
-- [ ] 10 题前后对照（4/10）
+- [x] 第 5 题：`sales.overdue_followup_flag`，0.44 → **1.0**（9/9，7 轮，含分支/join/state）
+- [ ] 10 题前后对照（5/10）
 - [ ] 消融与迁移
 - [ ] 报告
 

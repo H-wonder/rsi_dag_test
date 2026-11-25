@@ -110,6 +110,15 @@
     "node": {
       "oneOf": [
         {
+          "$ref": "#/$defs/collectNode"
+        },
+        {
+          "$ref": "#/$defs/joinNode"
+        },
+        {
+          "$ref": "#/$defs/businessdaysNode"
+        },
+        {
           "$ref": "#/$defs/computeNode"
         },
         {
@@ -610,6 +619,100 @@
             "left",
             "right",
             "op"
+          ]
+        }
+      ]
+    },
+    "businessdaysNode": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "businessdays"
+            },
+            "from": {
+              "$ref": "#/$defs/expr"
+            },
+            "to": {
+              "$ref": "#/$defs/expr"
+            },
+            "out": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to",
+            "out"
+          ]
+        }
+      ]
+    },
+    "joinNode": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "join"
+            },
+            "items": {
+              "$ref": "#/$defs/expr"
+            },
+            "with": {
+              "$ref": "#/$defs/expr"
+            },
+            "leftKey": {
+              "type": "string"
+            },
+            "rightKey": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "object"
+            },
+            "setFound": {
+              "type": "string"
+            },
+            "out": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "items",
+            "with",
+            "leftKey",
+            "rightKey",
+            "out"
+          ]
+        }
+      ]
+    },
+    "collectNode": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "collect"
+            },
+            "value": {
+              "$ref": "#/$defs/expr"
+            },
+            "stateKey": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value",
+            "stateKey"
           ]
         }
       ]

