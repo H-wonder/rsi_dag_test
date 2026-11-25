@@ -59,7 +59,11 @@ fetch ── rows ── pick ── loop1
 | `sales.overdue_followup_flag` | 9/9 | `results/platform-sales.overdue_followup_flag.png` |
 
 路径：平台点“运行” → `/flowTesting-core` 代理 → 后端 `:39910`。
-后端日志可见 `FLOW_RUN 收到 structure` → `status=OK`。
+后端日志可见 `FLOW_RUN 收到 structure` → `FLOW_RUN score=...` → `status=OK`。
+
+页面运行后会显示一个黑色结果面板：`status | score | assertions`，
+下面是最新循环的 `state/perIteration`。截图：
+[platform-score-monday.png](../results/platform-score-monday.png)。
 
 画布由 [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) 从结构 JSON 生成：
 主链从左到右，循环体/分支体放在下方并用 `edge: false` 的连线表示。
@@ -68,7 +72,7 @@ fetch ── rows ── pick ── loop1
 
 ## 4. 当前限制
 
-- 画布上还不能编辑节点的参数（缺工具栏/表单模块），结构参数写在 `test/*.tsx` 里；
+- 画布上还不能编辑节点的参数（缺工具栏/表单模块），结构参数写在 `structures/*.json`，由 exporter 生成 `structures.ts`；
 - 换任务需要改 `setView` 的导入；
 - 这只是“人工编排”的演示入口；批量跑分仍用 `harness/run_structure.py`。
 

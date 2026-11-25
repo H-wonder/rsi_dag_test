@@ -169,7 +169,8 @@ uv run --project ../datasets/AutomationBench python scripts/world_bridge.py \
 1. 打开 `http://localhost:3000/?task=sales.overdue_followup_flag`；
 2. 指出 13 个节点：SOQL、join、循环、工作日、分支、建任务、汇总、发信；
 3. 点“运行”；
-4. 终端执行 `curl -s localhost:8765/score`，展示 `score 1.0`、9/9 断言；
+4. 页面下方黑色面板会显示 `status: OK | score: 1 | assertions: 9/9`；
+   也可以终端 `curl -s localhost:8765/score` 交叉验证；
 5. 后端日志展示 `FLOW_RUN 收到 structure` → `status=OK`。
 
 ### 演示 2：前后对照（2 分钟）
