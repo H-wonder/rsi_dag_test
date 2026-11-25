@@ -159,6 +159,9 @@
         },
         {
           "$ref": "#/$defs/firstNode"
+        },
+        {
+          "$ref": "#/$defs/extractNode"
         }
       ]
     },
@@ -745,6 +748,62 @@
           },
           "required": [
             "items",
+            "out"
+          ]
+        }
+      ]
+    },
+    "extractNode": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "extract"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "system": {
+              "type": "string"
+            },
+            "schema": {
+              "type": "object"
+            },
+            "model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number"
+            },
+            "maxTokens": {
+              "type": "integer"
+            },
+            "reasoningEffort": {
+              "type": "string"
+            },
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "validate": {
+              "type": "string"
+            },
+            "retries": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "out": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "prompt",
             "out"
           ]
         }

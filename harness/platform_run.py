@@ -12,7 +12,9 @@ read /score, save screenshot to results/platform-<task>.png.
 
 from __future__ import annotations
 
+import argparse
 import base64
+import os
 import csv
 import json
 import subprocess
@@ -60,16 +62,36 @@ def start_bridge(task: str, domain: str) -> subprocess.Popen:
 
 
 def stop_bridge(proc: subprocess.Popen) -> None:
-    proc.terminate()
     try:
+        proc.terminate()
         proc.wait(timeout=10)
+    except (ProcessLookupError, PermissionError):
+        pass
     except subprocess.TimeoutExpired:
-        proc.kill()
+        try:
+            proc.kill()
+        except (ProcessLookupError, PermissionError):
+            pass
+
+
+def wait_for_score(bridge: str, seconds: int) -> dict:
+    """Poll /score until it reaches 1.0 (or timeout), for slow LLM structures."""
+    deadline = time.time() + seconds
+    last = {}
+    while time.time() < deadline:
+        try:
+            last = http_json(bridge + "/score", timeout=10)
+            if last.get("score") == 1.0:
+                return last
+        except Exception:
+            pass
+        time.sleep(2)
+    return last
 
 
 class Driver:
     def __init__(self) -> None:
-        self.proc = subprocess.Popen(["geckodriver", "--port", "4444"],
+        self.proc = subprocess.Popen(["geckodriver", "--port", os.environ.get("GECKODRIVER_PORT", "4455")],
                                      stdout=open("/tmp/geckodriver-platform.log", "w"),
                                      stderr=subprocess.STDOUT)
         time.sleep(2)
@@ -80,10 +102,11 @@ class Driver:
             }}
         })
         self.sid = session["value"]["sessionId"]
-        self.base = f"http://127.0.0.1:4444/session/{self.sid}"
+        self.port = os.environ.get("GECKODRIVER_PORT", "4455")
+        self.base = f"http://127.0.0.1:{self.port}/session/{self.sid}"
 
     def _post(self, path: str, payload: dict) -> dict:
-        req = urllib.request.Request(self.base + path if hasattr(self, "base") else "http://127.0.0.1:4444" + path,
+        req = urllib.request.Request(self.base + path if hasattr(self, "base") else f"http://127.0.0.1:{os.environ.get('GECKODRIVER_PORT', '4455')}" + path,
                                      data=json.dumps(payload).encode(),
                                      headers={"Content-Type": "application/json"},
                                      method="POST")
@@ -114,12 +137,30 @@ class Driver:
             urllib.request.urlopen(req, timeout=30).read()
         except Exception:
             pass
-        self.proc.terminate()
+        try:
+            self.proc.terminate()
+        except (ProcessLookupError, PermissionError):
+            pass
 
 
 def main() -> None:
-    structures = [p for p in sorted((REPO / "structures").glob("*.json"))
-                  if not p.name.startswith("stress.")]
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--only", default="",
+                    help="comma-separated task names; default = every non-stress structure")
+    ap.add_argument("--append", action="store_true", help="append rows to platform-runs.csv")
+    ap.add_argument("--score-timeout", type=int, default=300,
+                    help="seconds to wait for a 1.0 score after clicking 运行")
+    args = ap.parse_args()
+
+    only = {x.strip() for x in args.only.split(",") if x.strip()}
+    structures = []
+    for p in sorted((REPO / "structures").glob("*.json")):
+        if p.name.startswith("stress."):
+            continue
+        data = json.loads(p.read_text())
+        if only and data["meta"]["task"] not in only:
+            continue
+        structures.append(p)
     driver = Driver()
     rows = []
     try:
@@ -127,14 +168,15 @@ def main() -> None:
             structure = json.loads(path.read_text())
             task = structure["meta"]["task"]
             domain = structure["meta"]["domain"]
+            subprocess.run(["fuser", "-k", "8765/tcp"], capture_output=True)
             proc = start_bridge(task, domain)
             try:
                 wait_health(BRIDGE)
                 driver.navigate(f"{PLATFORM}/?task={task}")
                 time.sleep(4)
                 clicked = driver.click_run()
-                time.sleep(5)
-                score = http_json(BRIDGE + "/score")
+                time.sleep(3)
+                score = wait_for_score(BRIDGE, args.score_timeout)
                 shot = REPO / "results" / f"platform-{task}.png"
                 driver.screenshot(shot)
                 row = {
@@ -152,9 +194,11 @@ def main() -> None:
         driver.close()
 
     csv_path = REPO / "results" / "platform-runs.csv"
-    with csv_path.open("w", newline="", encoding="utf-8") as fh:
+    mode = "a" if args.append and csv_path.exists() else "w"
+    with csv_path.open(mode, newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=["task", "clicked", "score", "assertions", "screenshot"])
-        writer.writeheader()
+        if mode == "w":
+            writer.writeheader()
         writer.writerows(rows)
 
 

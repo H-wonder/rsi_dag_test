@@ -130,12 +130,15 @@ def main() -> None:
         csv_path = REPO / "results" / "before-after.csv"
         fields = ["task", "domain", "pattern", "baseline_score", "structured_score",
                   "assertions_passed", "assertions_total", "iterations", "elapsed_seconds"]
-        new_file = not csv_path.exists()
-        with csv_path.open("a", newline="", encoding="utf-8") as fh:
+        rows = []
+        if csv_path.exists():
+            with csv_path.open(newline="", encoding="utf-8") as fh:
+                rows = [r for r in csv.DictReader(fh) if r.get("task") != task]
+        rows.append({k: str(record.get(k)) for k in fields})
+        with csv_path.open("w", newline="", encoding="utf-8") as fh:
             writer = csv.DictWriter(fh, fieldnames=fields)
-            if new_file:
-                writer.writeheader()
-            writer.writerow({k: record.get(k) for k in fields})
+            writer.writeheader()
+            writer.writerows(rows)
 
         print(json.dumps({
             "task": task,

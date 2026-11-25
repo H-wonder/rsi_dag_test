@@ -32,18 +32,19 @@ fetch ── rows ── pick ── loop1
 
 后端 `FlowCodeRun` 收到后交给 `StructureExecutor`，执行结果写回 `result`。
 
-## 3. 验证：10 题全部从平台运行
+## 3. 验证：12 题全部从平台运行
 
-页面下拉框列出 10 个任务，也可以通过 `?task=<task_name>` 直接打开。
-[harnes/platform_run.py](../harness/platform_run.py) 用无头 Firefox 逐题：
+页面下拉框列出 12 个任务，也可以通过 `?task=<task_name>` 直接打开。
+[platform_run.py](../harness/platform_run.py) 用无头 Firefox 逐题：
 
 1. 启动对应 bridge；
 2. 打开 `/?task=<task>`；
 3. 点击“运行”；
-4. 读取 `/score`；
+4. 轮询 `/score`（发票题要等模型调用，最多 300s）；
 5. 保存截图。
 
-结果：[results/platform-runs.csv](../results/platform-runs.csv)，**10/10 全部 1.0**。
+结果：[results/platform-runs.csv](../results/platform-runs.csv)，**12/12 全部 1.0**。
+只跑新增题：`python3 harness/platform_run.py --only support.zendesk_sf_case_sync,finance.invoice_email_extract --append`。
 
 | 任务 | 断言 | 截图 |
 |---|---|---|
@@ -57,12 +58,14 @@ fetch ── rows ── pick ── loop1
 | `operations.mailchimp_ecommerce_sync` | 7/7 | `results/platform-operations.mailchimp_ecommerce_sync.png` |
 | `operations.space_utilization_analysis` | 5/5 | `results/platform-operations.space_utilization_analysis.png` |
 | `sales.overdue_followup_flag` | 9/9 | `results/platform-sales.overdue_followup_flag.png` |
+| `support.zendesk_sf_case_sync`（备用） | 16/16 | `results/platform-support.zendesk_sf_case_sync.png` |
+| `finance.invoice_email_extract`（备用，含 LLM） | 5/5 | `results/platform-finance.invoice_email_extract.png` |
 
 路径：平台点“运行” → `/flowTesting-core` 代理 → 后端 `:39910`。
 后端日志可见 `FLOW_RUN 收到 structure` → `FLOW_RUN score=...` → `status=OK`。
 
 页面运行后会显示一个黑色结果面板：`status | score | assertions`，
-下面是最新循环的 `state/perIteration`。截图：
+下面是最新循环的 `state/perIteration`。截图（发票题因为要等 10 次模型调用，面板会在约 100s 后出现）：
 [platform-score-monday.png](../results/platform-score-monday.png)。
 
 画布由 [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) 从结构 JSON 生成：

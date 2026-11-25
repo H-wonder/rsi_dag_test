@@ -60,7 +60,7 @@ harness/run_structure.py
 
 | 位置 | 链接 | 说明 |
 |---|---|---|
-| 统计表 | [05-reuse.md](05-reuse.md) 第 3 节 | 108 实例 / 12 类型 / 92% 复用 |
+| 统计表 | [05-reuse.md](05-reuse.md) 第 3 节 | 10 主任务 108 实例 / 12 类型 / 92% 复用；补 2 题后 +86 实例、+`extract` |
 | 统计脚本 | [node_usage.py](../harness/node_usage.py) | 重新计算 |
 | 类型→任务明细 | [05-reuse.md](05-reuse.md) 第 3.1 节 | 每种节点被哪些任务使用 |
 
@@ -73,6 +73,8 @@ harness/run_structure.py
 | 循环 | [LoopRunner.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java#L31) | 31（入口委托在 [StructureExecutor#L548](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L548)） |
 | fetch/action | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L196) | 196 |
 | 分支 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L515) | 515 |
+| `extract` 节点 | [StructureExecutor.java#L447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447) | 447（分发在 194） |
+| 模型客户端 | [ModelClient.java#L51](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/ModelClient.java#L51) | 51 |
 | 表达式/模板 | [Expr.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/Expr.java#L21) | 21/39 |
 | 调 bridge | [BridgeClient.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java#L38) | 38 |
 | 取分 | [BridgeClient.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java#L78) | 78 |
@@ -87,7 +89,8 @@ harness/run_structure.py
 | 文件 | 状态 | 作用 |
 |---|---|---|
 | [FlowCodeRun.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java) | 修改 | 接收 structure，调用解释器，取分，写回 result |
-| [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java) | 新增 | 解释器：解析/校验/节点分发（583 行） |
+| [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java) | 新增 | 解释器：解析/校验/节点分发（695 行） |
+| [ModelClient.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/ModelClient.java) | 新增 | `extract` 的模型调用（OpenAI 兼容，135 行） |
 | [LoopRunner.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java) | 新增 | 循环执行：帧/终止/预算/状态（204 行） |
 | [NodeSupport.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/NodeSupport.java) | 新增 | 数组/数字/模板/checkpoint 工具（90 行） |
 | [Expr.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/Expr.java) | 新增 | JEXL 求值 + `{{}}` 模板 |
@@ -114,7 +117,7 @@ harness/run_structure.py
 |---|---|---|
 | [Login/index.tsx](../../rsi-flow-platform/src/xpages/Login/index.tsx) | 修改 | 任务下拉、运行按钮、getView→结构、结果面板 |
 | [test/buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) | 新增 | 结构 JSON → 画布 elements/links |
-| [test/structures.ts](../../rsi-flow-platform/src/xpages/Login/test/structures.ts) | 生成 | 10 个任务的结构 |
+| [test/structures.ts](../../rsi-flow-platform/src/xpages/Login/test/structures.ts) | 生成 | 12 个任务的结构 |
 | [flows/.../Run/index.ts](../../rsi-flow-platform/src/flows/com.horsecoder.common.whuTalent.flowTesting.core/Run/index.ts) | 原有 | `flowRunFacade` 的 HTTP 封装 |
 
 删除了 `loop_monday_test.tsx`、`loop_overdue_test.tsx`（已被 `structures.ts + buildTest` 取代）。
@@ -273,7 +276,7 @@ vars[indexVar] = index
 
 ---
 
-## 4. 十个任务分别在哪实现
+## 4. 十二个任务分别在哪实现
 
 所有结构在 [structures/](../structures/)；每题一行“关键条件”，可以直接对照 JSON。
 
@@ -374,6 +377,78 @@ vars[indexVar] = index
   - 其余 Finalized → 表里的 New_Terms。
 - 结果：7/7；只信表格的 naive 版 0.571。
 
+### 4.11 Zendesk → Salesforce 同步（备用题）
+
+- 文件：[support.zendesk_sf_case_sync.json](../structures/support.zendesk_sf_case_sync.json)
+- 基线：0.75，漏建 case、计数与通知不一致。
+- 链：`fetch 三张配置表 → rows → fetch 用户/组织/联系人/账户/已有 case →
+  join → map(算域名/优先级) → filter(可同步) → loop(建 case + 评论 + collect) →
+  assert(总数 6) → Slack 汇总`。
+- 关键条件（`ready` 节点）：
+  `status == 'new' and contact_found and account_id != null and
+   (block_status == null or block_status != 'Blocked') and not duplicate`
+- 优先级三层覆盖（`prepare` 节点）：
+  1. blocklist `Warning` → config 的 Low；
+  2. SLA `Platinum` → config 的 Critical；
+  3. 组织标签 `enterprise` → config 的 High；
+  4. 否则 Zendesk priority 映射 High/Medium/Low。
+- 三张配置表都真正参与计算：blocklist 过滤、SLA 优先级、config 的
+  `Batch_Reference`/三个优先级规则值。
+- 结果：16/16，5 轮；**0 个新节点类型**。
+
+### 4.12 发票邮件抽取（备用题，能力补齐）
+
+- 文件：[finance.invoice_email_extract.json](../structures/finance.invoice_email_extract.json)
+- 基线：0.40，只记了部分发票、金额未更正。
+- 链：`fetch 邮件列表 → loop(fetch 正文 → extract → collect) →
+  fetch 阻断表/Slack → extract 更正 → filter 发票 → join 阻断名单 →
+  合法/阻断分流 → 应用更正 → 阈值判断 → 循环写表 → 循环退回 → 汇总邮件`。
+- 关键点：
+  - `extract_email` 对每封邮件调用一次模型，返回 `kind/vendor/invoice/
+    invoice_date/due_date/amount/authority/review_threshold`；
+  - `validate` 要求发票字段齐全，否则自动重试（`retries: 1`）；
+  - 阻断匹配用 `vendor.toLowerCase()` 与表里的 `Vendor Name` 对齐，
+    避免 “Acme Supplies LLC” 与 “Acme Solutions Inc.” 混淆；
+  - Slack 更正通过 `extract_correction` 抽出 `GL-88210 → 11,340.50`，
+    再在 `apply_correction` 里覆盖邮件原值；
+  - 阈值来自 VP 邮件（`authority == 'vp'` 且发件域为 `company.example.com`），
+    控制器阈值被覆盖，外部审计的越权请求被忽略；
+  - 汇总金额用 `aggregate sum(field: item.amount)`，注意 field 要写
+    `item.amount`（只写 `amount` 会得到 0）。
+- 结果：5/5，13 轮；**10 次模型调用**。
+
+### 4.13 `extract` 节点本身
+
+| 部分 | 位置 | 说明 |
+|---|---|---|
+| 分发 | [StructureExecutor.java#L194](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L194) | `case "extract"` |
+| 执行 | [StructureExecutor.java#L447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447) | 渲染 prompt/schema、调用模型、校验、重试 |
+| JSON 解析 | [StructureExecutor.java#L517](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L517) | 去代码围栏、截取第一个 `{...}` |
+| 模型调用 | [ModelClient.java#L51](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/ModelClient.java#L51) | `/chat/completions`，读 `OPENAI_*` |
+| 调用计数 | [StructureExecutor.java#L34](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L34) | 结果里的 `llmCalls` |
+| 数组收集 | [StructureExecutor.java#L419](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L419) | `collect` 的 `as: array` |
+
+节点字段：
+
+```json
+{
+  "type": "extract",
+  "out": "email_data",
+  "prompt": "... {{detail.body_plain}} ...",
+  "schema": { "kind": "invoice|policy|other", "amount": "number|null" },
+  "required": ["kind", "sender"],
+  "validate": "kind != 'invoice' or (vendor != null and amount != null)",
+  "retries": 1,
+  "reasoningEffort": "low",
+  "maxTokens": 700
+}
+```
+
+重试语义：解析失败、缺 `required` 字段、`validate` 为 false 都会触发；
+重试时把错误原因追加到 prompt，要求只返回修正后的 JSON。
+实测：故意要一个不存在的字段，结果 `llmCalls = 2`，最终返回
+`extract 失败（2 次）: 缺少字段 must_exist`。
+
 ---
 
 ## 5. 平台画布是怎么来的
@@ -383,7 +458,7 @@ vars[indexVar] = index
 由 [export_platform_structures.py](../harness/export_platform_structures.py) 生成：
 
 ```text
-structures/*.json（10 个主任务）
+structures/*.json（10 主 + 2 备用；消融/迁移/skill/stress 不导出）
   → structures.ts：{ "task": {...}, ... }
 ```
 

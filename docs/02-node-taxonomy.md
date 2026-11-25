@@ -46,30 +46,32 @@
 
 > **2026-11-25 实现状态**：`sequence`、`branch`、`loop`（forEach/while/retry）、`assert`、
 > `fetch`、`filter`、`map`、`aggregate`、`rows`、`encode`、`compute`、`join`、
-> `datediff`、`businessdays`、`collect`、`first` 已实现；
-> `fanout`、`extract`、`classify`、`dedupe` 仍为计划。
+> `datediff`、`businessdays`、`collect`、`first`、**`extract`** 已实现；
+> `fanout`、`classify`、`dedupe` 仍为计划。
+> `extract` 用于发票题：`prompt` + `schema` + `validate` + `retries`，
+> 实现见 [StructureExecutor#L447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447)。
 
 ### L1 控制
 
 | 节点 | 输入 | 输出 | 关键参数 | 状态 |
 |---|---|---|---|---|
-| `sequence` | 前驱结果 | — | `body: [nodeId]` | 计划 |
-| `branch` | 上下文 | 选中的分支 | `cases: [{when, body}]`, `default` | 计划 |
-| `loop` | `items` 或 `condition` | `results[]`, `failures[]`, `state` | 见 01-loop-design | 计划 |
+| `sequence` | 前驱结果 | — | `body: [nodeId]` | 已完成 |
+| `branch` | 上下文 | 选中的分支 | `cases: [{when, body}]`, `default` | 已完成 |
+| `loop` | `items` 或 `condition` | `results[]`, `failures[]`, `state` | 见 01-loop-design | 已完成 |
 | `while` | `condition` | 同上 | `condition`, `maxIterations`, `body` | 计划 |
 | `fanout` / `join` | 集合 / 分支结果 | 合并结果 | `items`, `body`, `joinMode` | 计划（本轮可能不做） |
 | `checkpoint` | 当前帧 | 快照 | `every`, `keep` | 计划 |
-| `assert` | 表达式 | `passed`/`missing` | `expr`, `message` | 计划 |
+| `assert` | 表达式 | `passed`/`missing` | `expr`, `message` | 已完成 |
 
 ### L2 数据/LLM
 
 | 节点 | 输入 | 输出 | 关键参数 | 状态 |
 |---|---|---|---|---|
-| `fetch` | — | 文本/JSON | `method`, `url`, `params`, `body` | 计划 |
-| `filter` | 数组 | 子数组 | `items`, `when`（JEXL） | 计划 |
-| `map` | 对象/数组 | 新对象 | `fields`, `template` | 计划 |
-| `aggregate` | 数组 | 数字/分组 | `items`, `op`, `by` | 计划 |
-| `extract` | 文本 | JSON | `prompt`, `schema` | 计划 |
+| `fetch` | — | 文本/JSON | `method`, `url`, `params`, `body` | 已完成 |
+| `filter` | 数组 | 子数组 | `items`, `when`（JEXL） | 已完成 |
+| `map` | 对象/数组 | 新对象 | `fields` | 已完成 |
+| `aggregate` | 数组 | 数字/分组 | `items`, `op`, `field`, `by` | 已完成 |
+| `extract` | 文本 | JSON | `prompt`, `schema`, `validate`, `retries` | **已完成** |
 | `classify` | 文本 | 标签 | `prompt`, `labels` | 计划 |
 | `dedupe` | 数组 | 去重数组 | `items`, `key` | 计划 |
 

@@ -1,0 +1,661 @@
+{
+  "meta": {
+    "task": "support.zendesk_sf_case_sync",
+    "benchmark": "support.zendesk_sf_case_sync",
+    "domain": "support",
+    "pattern": "P6/P4",
+    "kind": "backup",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "备用题补齐：三张配置表（blocklist/SLA/config）+ Zendesk 用户/组织 + Salesforce 联系人/账户/已有 case，先补全再 join，过滤出 5 条可同步 ticket，循环建 case + 评论，最后 Slack 汇总。只使用已有节点类型。"
+  },
+  "nodes": [
+    {
+      "id": "fetch_tickets",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.zendesk.com/api/v2/tickets"
+      },
+      "out": "tickets_raw"
+    },
+    {
+      "id": "map_tickets",
+      "type": "map",
+      "items": "{{tickets_raw.tickets}}",
+      "out": "tickets"
+    },
+    {
+      "id": "candidates",
+      "type": "filter",
+      "items": "{{tickets}}",
+      "when": "item.requester_id != null",
+      "out": "candidates"
+    },
+    {
+      "id": "fetch_users",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.zendesk.com/api/v2/users"
+      },
+      "out": "users_raw"
+    },
+    {
+      "id": "map_users",
+      "type": "map",
+      "items": "{{users_raw.users}}",
+      "out": "users"
+    },
+    {
+      "id": "fetch_orgs",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.zendesk.com/api/v2/organizations"
+      },
+      "out": "orgs_raw"
+    },
+    {
+      "id": "map_orgs",
+      "type": "map",
+      "items": "{{orgs_raw.organizations}}",
+      "out": "orgs"
+    },
+    {
+      "id": "fetch_contacts",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": {
+          "q": "SELECT Id, FirstName, LastName, Email, AccountId FROM Contact"
+        }
+      },
+      "out": "contacts_raw"
+    },
+    {
+      "id": "map_contacts",
+      "type": "map",
+      "items": "{{contacts_raw.records}}",
+      "out": "contacts"
+    },
+    {
+      "id": "fetch_cases",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": {
+          "q": "SELECT Id, Subject, AccountId, Priority, Origin FROM Case"
+        }
+      },
+      "out": "cases_raw"
+    },
+    {
+      "id": "map_cases",
+      "type": "map",
+      "items": "{{cases_raw.records}}",
+      "out": "cases"
+    },
+    {
+      "id": "fetch_accounts",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": {
+          "q": "SELECT Id, Name FROM Account"
+        }
+      },
+      "out": "accounts_raw"
+    },
+    {
+      "id": "map_accounts",
+      "type": "map",
+      "items": "{{accounts_raw.records}}",
+      "out": "accounts"
+    },
+    {
+      "id": "fetch_blocklist",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_blocklist/values/Blocked Orgs!A1:Z100"
+      },
+      "out": "blocklist_raw"
+    },
+    {
+      "id": "rows_blocklist",
+      "type": "rows",
+      "items": "{{blocklist_raw.values}}",
+      "out": "blocklist"
+    },
+    {
+      "id": "fetch_sla",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_sla/values/SLA Tiers!A1:Z100"
+      },
+      "out": "sla_raw"
+    },
+    {
+      "id": "rows_sla",
+      "type": "rows",
+      "items": "{{sla_raw.values}}",
+      "out": "sla_tiers"
+    },
+    {
+      "id": "fetch_config",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_config/values/Config!A1:Z100"
+      },
+      "out": "config_raw"
+    },
+    {
+      "id": "rows_config",
+      "type": "rows",
+      "items": "{{config_raw.values}}",
+      "out": "config"
+    },
+    {
+      "id": "cfg_batch",
+      "type": "filter",
+      "items": "{{config}}",
+      "when": "item.Setting == 'Batch_Reference'",
+      "out": "cfg_batch_rows"
+    },
+    {
+      "id": "first_batch",
+      "type": "first",
+      "items": "{{cfg_batch_rows}}",
+      "out": "batch",
+      "itemVar": "batch"
+    },
+    {
+      "id": "cfg_platinum",
+      "type": "filter",
+      "items": "{{config}}",
+      "when": "item.Setting == 'Priority_Rule_SLA_Platinum'",
+      "out": "cfg_platinum_rows"
+    },
+    {
+      "id": "first_platinum",
+      "type": "first",
+      "items": "{{cfg_platinum_rows}}",
+      "out": "platinum",
+      "itemVar": "platinum"
+    },
+    {
+      "id": "cfg_enterprise",
+      "type": "filter",
+      "items": "{{config}}",
+      "when": "item.Setting == 'Priority_Rule_Org_Tag_enterprise'",
+      "out": "cfg_enterprise_rows"
+    },
+    {
+      "id": "first_enterprise",
+      "type": "first",
+      "items": "{{cfg_enterprise_rows}}",
+      "out": "enterprise_rule",
+      "itemVar": "enterprise_rule"
+    },
+    {
+      "id": "cfg_warning",
+      "type": "filter",
+      "items": "{{config}}",
+      "when": "item.Setting == 'Priority_Rule_Blocklist_Warning'",
+      "out": "cfg_warning_rows"
+    },
+    {
+      "id": "first_warning",
+      "type": "first",
+      "items": "{{cfg_warning_rows}}",
+      "out": "warning_rule",
+      "itemVar": "warning_rule"
+    },
+    {
+      "id": "join_users",
+      "type": "join",
+      "items": "{{candidates}}",
+      "with": "users",
+      "leftKey": "requester_id",
+      "rightKey": "id",
+      "fields": {
+        "requester_email": "email",
+        "requester_name": "name",
+        "organization_id": "organization_id"
+      },
+      "out": "tickets_users"
+    },
+    {
+      "id": "add_domain",
+      "type": "map",
+      "items": "{{tickets_users}}",
+      "fields": {
+        "id": "{{item.id}}",
+        "subject": "{{item.subject}}",
+        "status": "{{item.status}}",
+        "priority": "{{item.priority}}",
+        "requester_id": "{{item.requester_id}}",
+        "requester_email": "{{item.requester_email}}",
+        "requester_name": "{{item.requester_name}}",
+        "organization_id": "{{item.organization_id}}",
+        "domain": "{{item.requester_email.substring(item.requester_email.indexOf('@') + 1)}}"
+      },
+      "out": "tickets_domain"
+    },
+    {
+      "id": "join_contacts",
+      "type": "join",
+      "items": "{{tickets_domain}}",
+      "with": "contacts",
+      "leftKey": "requester_email",
+      "rightKey": "Email",
+      "fields": {
+        "account_id": "AccountId",
+        "contact_id": "Id",
+        "contact_first": "FirstName",
+        "contact_last": "LastName"
+      },
+      "setFound": "contact_found",
+      "out": "tickets_contacts"
+    },
+    {
+      "id": "join_orgs",
+      "type": "join",
+      "items": "{{tickets_contacts}}",
+      "with": "orgs",
+      "leftKey": "organization_id",
+      "rightKey": "id",
+      "fields": {
+        "org_tags": "tags"
+      },
+      "out": "tickets_orgs"
+    },
+    {
+      "id": "join_blocklist",
+      "type": "join",
+      "items": "{{tickets_orgs}}",
+      "with": "blocklist",
+      "leftKey": "domain",
+      "rightKey": "Domain",
+      "fields": {
+        "block_status": "Status"
+      },
+      "out": "with_block"
+    },
+    {
+      "id": "join_sla",
+      "type": "join",
+      "items": "{{with_block}}",
+      "with": "sla_tiers",
+      "leftKey": "domain",
+      "rightKey": "Domain",
+      "fields": {
+        "sla_tier": "SLA Tier"
+      },
+      "out": "with_sla"
+    },
+    {
+      "id": "prepare",
+      "type": "map",
+      "items": "{{with_sla}}",
+      "fields": {
+        "id": "{{item.id}}",
+        "subject": "{{item.subject}}",
+        "status": "{{item.status}}",
+        "priority": "{{item.priority}}",
+        "requester_id": "{{item.requester_id}}",
+        "requester_email": "{{item.requester_email}}",
+        "requester_name": "{{item.requester_name}}",
+        "account_id": "{{item.account_id}}",
+        "contact_id": "{{item.contact_id}}",
+        "contact_found": "{{item.contact_found}}",
+        "organization_id": "{{item.organization_id}}",
+        "org_tags": "{{item.org_tags}}",
+        "domain": "{{item.requester_email.substring(item.requester_email.indexOf('@') + 1)}}",
+        "case_priority": "{{item.block_status == 'Warning' ? warning_rule.Value : (item.sla_tier == 'Platinum' ? platinum.Value : ((item.org_tags != null and item.org_tags.contains('enterprise')) ? enterprise_rule.Value : (item.priority == 'urgent' or item.priority == 'high' ? 'High' : (item.priority == 'normal' ? 'Medium' : 'Low'))))}}"
+      },
+      "out": "prepared"
+    },
+    {
+      "id": "join_existing",
+      "type": "join",
+      "items": "{{prepared}}",
+      "with": "cases",
+      "leftKey": "subject",
+      "rightKey": "Subject",
+      "setFound": "duplicate",
+      "out": "with_duplicate"
+    },
+    {
+      "id": "join_accounts",
+      "type": "join",
+      "items": "{{with_duplicate}}",
+      "with": "accounts",
+      "leftKey": "account_id",
+      "rightKey": "Id",
+      "fields": {
+        "account_name": "Name"
+      },
+      "out": "enriched"
+    },
+    {
+      "id": "ready",
+      "type": "filter",
+      "items": "{{enriched}}",
+      "when": "item.status == 'new' and item.contact_found and item.account_id != null and (item.block_status == null or item.block_status != 'Blocked') and not item.duplicate",
+      "out": "ready_tickets"
+    },
+    {
+      "id": "count_ready",
+      "type": "aggregate",
+      "items": "{{ready_tickets}}",
+      "op": "count",
+      "out": "created_count"
+    },
+    {
+      "id": "count_total",
+      "type": "aggregate",
+      "items": "{{candidates}}",
+      "op": "count",
+      "out": "total_tickets"
+    },
+    {
+      "id": "skipped",
+      "type": "compute",
+      "left": "{{total_tickets}}",
+      "right": "{{created_count}}",
+      "op": "subtract",
+      "out": "skipped_count",
+      "format": "int"
+    },
+    {
+      "id": "loop_cases",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "{{ready_tickets}}",
+      "itemVar": "t",
+      "body": [
+        "create_case",
+        "comment_case",
+        "collect_accounts",
+        "collect_priorities"
+      ],
+      "maxIterations": 20,
+      "onError": "continue",
+      "checkpoint": {
+        "every": 1,
+        "keep": 20
+      }
+    },
+    {
+      "id": "create_case",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/sobjects/Case",
+        "body": {
+          "Subject": "{{t.subject}}",
+          "Description": "Created from Zendesk ticket {{t.id}}",
+          "AccountId": "{{t.account_id}}",
+          "Priority": "{{t.case_priority}}",
+          "Origin": "Web",
+          "Status": "New"
+        }
+      }
+    },
+    {
+      "id": "comment_case",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "PUT",
+        "url": "https://yourinstance.zendesk.com/api/v2/tickets/{{t.id}}",
+        "body": {
+          "ticket": {
+            "comment": {
+              "body": "Synced to Salesforce for account {{t.account_name}} (priority {{t.case_priority}}).",
+              "public": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "collect_accounts",
+      "type": "collect",
+      "stateKey": "account_names",
+      "value": "{{t.account_name}}"
+    },
+    {
+      "id": "collect_priorities",
+      "type": "collect",
+      "stateKey": "priorities",
+      "value": "{{t.case_priority}}"
+    },
+    {
+      "id": "fetch_cases_after",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": {
+          "q": "SELECT Id, Subject, AccountId, Priority, Origin FROM Case"
+        }
+      },
+      "out": "cases_after"
+    },
+    {
+      "id": "assert_count",
+      "type": "assert",
+      "expr": "cases_after.totalSize == 6",
+      "message": "Salesforce case 总数应为 6（1 条已有 + 5 条新建）"
+    },
+    {
+      "id": "slack_summary",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "channel": "support-sync",
+          "text": "Zendesk to Salesforce sync {{batch.Value}} complete: {{created_count}} cases created, {{skipped_count}} skipped.\nAccounts: {{loop_loop_cases.state.account_names}}\nPriorities: {{loop_loop_cases.state.priorities}}"
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch_tickets"
+    ],
+    [
+      "fetch_tickets",
+      "map_tickets"
+    ],
+    [
+      "map_tickets",
+      "candidates"
+    ],
+    [
+      "candidates",
+      "fetch_users"
+    ],
+    [
+      "fetch_users",
+      "map_users"
+    ],
+    [
+      "map_users",
+      "fetch_orgs"
+    ],
+    [
+      "fetch_orgs",
+      "map_orgs"
+    ],
+    [
+      "map_orgs",
+      "fetch_contacts"
+    ],
+    [
+      "fetch_contacts",
+      "map_contacts"
+    ],
+    [
+      "map_contacts",
+      "fetch_cases"
+    ],
+    [
+      "fetch_cases",
+      "map_cases"
+    ],
+    [
+      "map_cases",
+      "fetch_accounts"
+    ],
+    [
+      "fetch_accounts",
+      "map_accounts"
+    ],
+    [
+      "map_accounts",
+      "fetch_blocklist"
+    ],
+    [
+      "fetch_blocklist",
+      "rows_blocklist"
+    ],
+    [
+      "rows_blocklist",
+      "fetch_sla"
+    ],
+    [
+      "fetch_sla",
+      "rows_sla"
+    ],
+    [
+      "rows_sla",
+      "fetch_config"
+    ],
+    [
+      "fetch_config",
+      "rows_config"
+    ],
+    [
+      "rows_config",
+      "cfg_batch"
+    ],
+    [
+      "cfg_batch",
+      "first_batch"
+    ],
+    [
+      "first_batch",
+      "cfg_platinum"
+    ],
+    [
+      "cfg_platinum",
+      "first_platinum"
+    ],
+    [
+      "first_platinum",
+      "cfg_enterprise"
+    ],
+    [
+      "cfg_enterprise",
+      "first_enterprise"
+    ],
+    [
+      "first_enterprise",
+      "cfg_warning"
+    ],
+    [
+      "cfg_warning",
+      "first_warning"
+    ],
+    [
+      "first_warning",
+      "join_users"
+    ],
+    [
+      "join_users",
+      "add_domain"
+    ],
+    [
+      "add_domain",
+      "join_contacts"
+    ],
+    [
+      "join_contacts",
+      "join_orgs"
+    ],
+    [
+      "join_orgs",
+      "join_blocklist"
+    ],
+    [
+      "join_blocklist",
+      "join_sla"
+    ],
+    [
+      "join_sla",
+      "prepare"
+    ],
+    [
+      "prepare",
+      "join_existing"
+    ],
+    [
+      "join_existing",
+      "join_accounts"
+    ],
+    [
+      "join_accounts",
+      "ready"
+    ],
+    [
+      "ready",
+      "count_ready"
+    ],
+    [
+      "count_ready",
+      "count_total"
+    ],
+    [
+      "count_total",
+      "skipped"
+    ],
+    [
+      "skipped",
+      "loop_cases"
+    ],
+    [
+      "loop_cases",
+      "fetch_cases_after"
+    ],
+    [
+      "fetch_cases_after",
+      "assert_count"
+    ],
+    [
+      "assert_count",
+      "slack_summary"
+    ]
+  ]
+}

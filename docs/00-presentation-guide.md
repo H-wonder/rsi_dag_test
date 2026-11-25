@@ -9,8 +9,9 @@
 ## 0. 一句话
 
 > 平台原生不支持循环；我们在结构层定义了循环语义，用人工编排的结构修复了
-> AutomationBench 的 10 个失败任务（全部 1.0），并用消融和迁移证明是“结构”在起作用，
-> 不是模型变强。
+> AutomationBench 的 10 个主任务（全部 1.0），并用消融和迁移证明是“结构”在起作用，
+> 不是模型变强。两道备用题也已补齐：Zendesk 用现有节点，发票题只新增 `extract`
+> 语义节点（10 次模型调用，只负责把文本变字段）。
 
 ## 1. 目标回顾
 
@@ -49,6 +50,7 @@
 
 - 节点：`fetch / rows / filter / map / aggregate / loop / branch / action / encode /
   compute / datediff / businessdays / join / collect / first / assert`；
+  备用发票题新增 `extract`（prompt + JSON schema + validate + retry）；
 - 表达式：JEXL；
 - 动作：bridge `/tool`（Gmail、Sheets、Salesforce、Zoom、Mailchimp、Notion、Slack、Zoho…）；
 - skill flow：`fetch` 节点可声明 `skillFlow=@.../FLOW_SKILL_FETCH`，由 rsi-flow 引擎执行；
@@ -58,30 +60,31 @@
 ### 2.3 平台：画布 → 结构
 
 - 页面：[Login/index.tsx](../../rsi-flow-platform/src/xpages/Login/index.tsx)；
-- 下拉框/`?task=` 切换 10 个任务；
+- 下拉框/`?task=` 切换 12 个任务；
 - 生成器：[buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx)；
 - 每个元素 `pendant.node` 存节点，`pendant.meta` 存任务信息；
 - 链路边变成 `edges`；循环体/分支体用 `edge:false` 的虚线；
 - 点“运行” → `getView` → 结构 JSON → 后端。
 - 文档：[07-platform.md](07-platform.md)。
 
-### 2.4 证据：10 题、消融、迁移
+### 2.4 证据：12 题、消融、迁移
 
-- 10 题全部 1.0（56/56 断言），见 [before-after.csv](../results/before-after.csv)；
+- 12 题全部 1.0（77/77 断言），见 [before-after.csv](../results/before-after.csv)；
+  其中 10 主任务 + Zendesk 为 0 次 LLM，发票题为 10 次；
 - 消融：QB 1.0→0.4，Mailchimp 1.0→0.286；
 - 迁移：Zoho 0.75→1.0、Analyst 0.917→1.0，0 新增节点；
-- 节点：108 实例 / 12 类型 / 92% 复用。
+- 节点：10 主任务 108 实例 / 12 类型 / 92% 复用；补两题 +86 实例，仅新增 `extract`。
 
 ## 3. 成果数字
 
 | 指标 | 值 |
 |---|---|
-| 修复任务 | 10/10 |
-| 基线平均分 | 0.426 |
+| 修复任务 | 12/12（10 主 + 2 备用） |
+| 基线平均分 | 0.451（10 主题 0.426） |
 | 结构平均分 | 1.000 |
-| 断言 | 56/56 |
-| LLM 调用 | 0 |
-| 平台运行 | 10/10（每題一张截图） |
+| 断言 | 77/77 |
+| LLM 调用 | 10 主题 0；Zendesk 0；发票题 10 |
+| 平台运行 | 12/12（每题一张截图） |
 | 迁移 | 2/2，0 新增节点 |
 | 长序列 | 120 轮压力 + 41 行真实 |
 
@@ -99,11 +102,11 @@ loop-structures/
 │   ├── 06-llm-generation.md       下一阶段契约
 │   ├── 07-platform.md             平台闭环
 │   ├── 08-long-sequence.md        长序列
-│   ├── 09-results.md              10 题结果
+│   ├── 09-results.md              12 题结果
 │   ├── 10-limitations.md          失败反馈与限制
 │   └── 11-loop-tests.md           循环语义测试
-├── structures/                    10 题 + 消融/迁移/skill/压力测试
-├── results/                       CSV、每题 JSON、10 张平台截图
+├── structures/                    12 题 + 消融/迁移/skill/压力测试
+├── results/                       CSV、每题 JSON、12 张平台截图
 ├── harness/                       运行器、平台批量、统计、导出
 └── schema/structure.schema.json   结构 schema
 ```
@@ -120,12 +123,12 @@ loop-structures/
 | 入口 flow | [flow-run.json](../../rsi-flow-spring-boot/core-flow/src/main/resources/flow/Run/flow-run.json) | `FLOW_RUN` 定义 |
 | 页面 | [Login/index.tsx](../../rsi-flow-platform/src/xpages/Login/index.tsx) | 下拉框、运行按钮、getView |
 | 结构→画布 | [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) | nodes/edges → elements/links |
-| 结构数据 | [structures.ts](../../rsi-flow-platform/src/xpages/Login/test/structures.ts) | 10 题结构 |
+| 结构数据 | [structures.ts](../../rsi-flow-platform/src/xpages/Login/test/structures.ts) | 12 题结构 |
 | 前端请求 | [Run/index.ts](../../rsi-flow-platform/src/flows/com.horsecoder.common.whuTalent.flowTesting.core/Run/index.ts) | POST `/api/engine/flow` |
 | schema | [structure.schema.json](../schema/structure.schema.json) | 节点/结构约束 |
-| 结构文件 | [structures/](../structures/) | 10 题 + 消融/迁移 |
+| 结构文件 | [structures/](../structures/) | 12 题 + 消融/迁移 |
 | 运行器 | [run_structure.py](../harness/run_structure.py) | 单题跑分 |
-| 平台批量 | [platform_run.py](../harness/platform_run.py) | 10 题 UI 跑分 |
+| 平台批量 | [platform_run.py](../harness/platform_run.py) | 12 题 UI 跑分；`--only` 可只跑单题 |
 | 统计 | [node_usage.py](../harness/node_usage.py)、[summarize_results.py](../harness/summarize_results.py) | 节点统计、CSV |
 | 问题生成 | [collect_problems.py](../harness/collect_problems.py) | 从数据集生成 problems.md |
 | 结构导出 | [export_platform_structures.py](../harness/export_platform_structures.py) | JSON → structures.ts |
@@ -136,7 +139,7 @@ loop-structures/
 | target.md 要求 | 证据 | 怎么展示 |
 |---|---|---|
 | 10 条可判定问题 | [problems.md](problems.md) | 打开总览表，指出输入/期望断言/基线失败 |
-| 10 条前后对照 | [09-results.md](09-results.md)、[before-after.csv](../results/before-after.csv) | 展示表格，解释 0.426→1.0 |
+| 前后对照 | [09-results.md](09-results.md)、[before-after.csv](../results/before-after.csv) | 主任务 0.426→1.0；备用题 0.75/0.40→1.0 |
 | 平台人工编排 | [07-platform.md](07-platform.md)、[platform-runs.csv](../results/platform-runs.csv) | 现场打开平台，切换任务，点运行 |
 | 循环：重复/终止/状态 | [01](01-loop-design.md)、[11](11-loop-tests.md) | 讲 forEach/while/retry、预算、checkpoint |
 | 长序列 | [08](08-long-sequence.md) | 120 轮 + 41 行，展示 perIteration/checkpoint |
@@ -178,7 +181,7 @@ uv run --project ../datasets/AutomationBench python scripts/world_bridge.py \
 
 ### 演示 2：前后对照（2 分钟）
 
-打开 [09-results.md](09-results.md)：10 题基线 0.426 → 结构 1.0。
+打开 [09-results.md](09-results.md)：10 主任务基线 0.426 → 结构 1.0；备用题 0.75/0.40 → 1.0。
 重点讲 3 个 0 分题（Monday、QB、Payment Terms）是怎么被逐条执行修复的。
 
 ### 演示 3：消融（2 分钟）
@@ -199,8 +202,8 @@ Zoho 0.75→1.0（16/16）、Analyst 0.917→1.0（12/12），
 
 主动打开 [10-limitations.md](10-limitations.md)：
 
-- 10/10 是“断言全过”，不是语义 100%；
-- 备用题为什么没做；
+- 12/12 是“断言全过”，不是语义 100%；
+- 备用题原来为什么没做、后来怎么补的；
 - naive 版本 0.571，说明人工读证据不可替代。
 
 ## 7. 复现命令
@@ -214,7 +217,7 @@ cd loop-structures
 python3 harness/run_structure.py \
   --structure structures/hr.monday_onboarding_pipeline.json --restart-bridge
 
-# 10 题全部从平台 UI 跑（需要 backend/dev/geckodriver）
+# 12 题全部从平台 UI 跑（需要 backend/dev/geckodriver）
 python3 harness/platform_run.py
 
 # 重新汇总 before-after.csv
@@ -229,10 +232,10 @@ python3 harness/node_usage.py
 | 问题 | 回答 |
 |---|---|
 | 平台原生不支持循环，你们怎么做的？ | 结构层定义 `loop` 节点，解释器执行；不在引擎里改 DAG（01/11） |
-| 是不是因为模型变强？ | 10 题 **0 次 LLM 调用**；消融掉到 0.4/0.286（05） |
+| 是不是因为模型变强？ | 10 主任务 + Zendesk **0 次 LLM 调用**；只有发票题用 10 次抽取；消融掉到 0.4/0.286（05） |
 | 怎么证明方法可复用？ | 2 道 held-out 迁移，0 新增节点，全部 1.0（05） |
-| 为什么只有 10 题？ | 目标是“至少 10”，另有 2 道备用；10 题覆盖 6 个域（problems） |
-| 哪些没修好？ | 备用题 2 道没做；naive 证据版本 0.571；断言≠语义（10） |
+| 为什么是 12 题？ | 目标是“至少 10”；原 10 主任务 + 2 道备用题均已补齐（problems/09） |
+| 哪些没修好？ | 12 题都是 1.0；剩余是 naive 证据版本 0.571、断言≠语义、嵌套/P4 真实场景未验证（10） |
 | 下一步 LLM 怎么生成？ | 输入/约束/判定/人工边界（06） |
 | AI 是不是替你编排了？ | 结构由人确认；AI 辅助读数据/起草/实现；每题能解释（第 10 节） |
 | 为什么平台跑分和脚本一致？ | 同一份结构 JSON；平台只是 `getView` 收集 nodes/edges（07） |
@@ -264,14 +267,14 @@ python3 harness/node_usage.py
 **怎么核实**
 
 - 官方 `partial_credit` + 断言 diff；
-- 平台 UI 实际点击运行，10/10 截图；
+- 平台 UI 实际点击运行，12/12 截图；
 - 消融（去掉循环掉分）与迁移（新题 0 新增节点）；
 - 循环语义测试（终止/状态/预算/checkpoint）。
 
 **边界**
 
-- 不是 LLM 端到端自动生成结构；LLM 只做抽取/判断的节点目前只留了契约（06），
-  10 题没有调用模型。
+- 不是 LLM 端到端自动生成结构；10 主任务 + Zendesk 没有调用模型；
+  发票题只在 `extract` 节点里调用模型（10 次），规则与结构仍由人编排。
 
 ## 11. 术语
 

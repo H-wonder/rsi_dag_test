@@ -25,7 +25,7 @@
 
 \title{\heiti 第三轮报告\\[4pt]
 \large 在无循环的流程平台上，用人工结构修复 AutomationBench 失败任务\\[2pt]
-\normalsize 设计、实现、10 题结果、消融迁移与下一阶段契约}
+\normalsize 设计、实现、12 题结果（10 主 + 2 备）、消融迁移与下一阶段契约}
 \author{霍建杰\\ \small 分支 \code{feature-wonder} · 2026-11-25}
 \date{}
 
@@ -38,10 +38,13 @@
 本轮目标是在 \code{rsi-flow-platform} 上人工编排结构，修复 AutomationBench 中至少 10 个具体问题，
 并为下一阶段“LLM 生成结构”铺路。平台原生不支持循环：引擎的 \code{Executor} 是 DAG 队列，
 画布没有循环容器。我们在结构层定义了 \code{loop} 节点（forEach/while/retry、预算、状态、嵌套、checkpoint），
-在后端实现解释器执行它，并把画布 JSON 接到后端。最终 10 个失败任务全部从基线提升到
+在后端实现解释器执行它，并把画布 JSON 接到后端。最终 10 个主任务全部从基线提升到
 \code{partial_credit = 1.0}（56/56 断言），且\textbf{没有调用任何模型}。
+两道备用题也已补齐：Zendesk 用现有节点达到 16/16；发票题新增 \code{extract}
+语义节点（10 次模型调用，只负责文本转字段）达到 5/5。合计 12/12、77/77 断言。
 消融显示去掉循环后 QB 降到 0.4、Mailchimp 降到 0.286；2 道 held-out 迁移题零新增节点通过；
-节点库 108 个实例仅 12 种类型，复用率 92\%。本报告同时给出失败边界、下一阶段 LLM 生成契约与复现方式。
+10 主任务 108 个实例仅 12 种类型，复用率 92\%，补两题后仅新增 1 种类型。
+本报告同时给出失败边界、下一阶段 LLM 生成契约与复现方式。
 \end{abstract}
 
 \tableofcontents
@@ -66,11 +69,11 @@
 要求 & 证据 & 位置 \\
 \midrule
 10 条可判定问题 & 12 条（10 主 + 2 备），含期望断言与基线失败明细 & \code{docs/problems.md} \\
-10 条前后对照 & 10/10 全部 1.0，56/56 断言 & \code{docs/09-results.md}, \path{results/before-after.csv} \\
-平台人工编排 & 10 题从平台“运行”得到 1.0，每题一张截图 & \code{docs/07-platform.md}, \path{results/platform-runs.csv} \\
+前后对照 & 12/12 全部 1.0，77/77 断言 & \code{docs/09-results.md}, \path{results/before-after.csv} \\
+平台人工编排 & 12 题从平台“运行”得到 1.0，每题一张截图 & \code{docs/07-platform.md}, \path{results/platform-runs.csv} \\
 循环：重复/终止/状态 & 语义设计 + 实现 + 测试 & \code{docs/01}, \code{docs/11} \\
 长序列 & 120 轮压力测试；41 行真实任务 & \code{docs/08} \\
-失败反馈 & 备用题、naive 0.571、断言 $\neq$ 语义 & \code{docs/10} \\
+失败反馈 & 备用题补齐过程、naive 0.571、断言 $\neq$ 语义 & \code{docs/10} \\
 方法复用 & 消融 2 题 + held-out 迁移 2 题 & \code{docs/05} \\
 LLM 生成设想 & 输入/约束/判定/人工边界 & \code{docs/06} \\
 AI 使用与核实 & 第~\ref{sec:ai} 节 & 本报告 \\
@@ -80,10 +83,13 @@ AI 使用与核实 & 第~\ref{sec:ai} 节 & 本报告 \\
 \subsection{结论}
 \begin{itemize}
   \item 10 个主任务全部 \code{1.0}，基线平均 0.426，断言 56/56，循环轮次合计 38；
-  \item 10 题均通过平台“运行”按钮执行，页面直接显示 \code{status/score/assertions}；
+  \item 两道备用题同日补齐：Zendesk 0.75$\to$1.0（16/16，0 新节点）；
+        发票题 0.40$\to$1.0（5/5，新增 \code{extract}，10 次模型调用）；
+  \item 12 题均通过平台“运行”按钮执行，页面直接显示 \code{status/score/assertions}；
   \item 循环语义有实现、有测试（终止/预算/状态/checkpoint/嵌套/while/retry）；
   \item 消融证明提升来自循环；迁移证明模式可复用且不需要新增节点；
-  \item 10 题没有调用模型：这是“结构替代模型推理”的直接证据，也是本轮的边界。
+  \item 10 主任务 + Zendesk 没有调用模型：这是“结构替代模型推理”的直接证据；
+        发票题只在语义抽取处调模型，规则仍由结构表达。
 \end{itemize}
 
 \section{背景：平台原生没有循环}
@@ -352,7 +358,7 @@ flow/Orchestration/flow-add-abs.json -> type:"flow" reference=skill flowId
 \caption{Overdue 任务的 13 节点画布：SOQL、join、循环、工作日、分支、建任务、汇总、发信。}
 \end{figure}
 
-\section{十个任务的编排与结果}
+\section{十二个任务的编排与结果}
 
 \subsection{总表}
 \begin{table}[h]
@@ -373,7 +379,10 @@ flow/Orchestration/flow-add-abs.json -> type:"flow" reference=skill flowId
 9 & \code{operations.mailchimp_ecommerce_sync} & 0.71 & 1.0 & 7/7 & 7 \\
 10 & \code{finance.payment_terms_tracking} & 0.00 & 1.0 & 7/7 & 5 \\
 \midrule
- & 合计/平均 & 0.426 & 1.000 & 56/56 & 38 \\
+11 & \code{support.zendesk_sf_case_sync} & 0.75 & 1.0 & 16/16 & 5 \\
+12 & \code{finance.invoice_email_extract} & 0.40 & 1.0 & 5/5 & 13 \\
+\midrule
+ & 合计/平均 & 0.451 & 1.000 & 77/77 & 56 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -433,6 +442,37 @@ Pinnacle → Net 20（邮件修正）、CloudHost → Net 30（Slack）、Metro 
 其余 Finalized 用表值；结果 7/7、5 轮。
 只信表格的 naive 版本 → 0.571。
 
+\subsection{Zendesk → Salesforce 同步（备用题）}
+基线 0.75：漏建 case、计数与通知不一致。结构先并行读取 blocklist/SLA/config
+三张配置表，再取 Zendesk 用户/组织、Salesforce 联系人/账户/已有 case，做四层 join：
+邮箱精确匹配联系人、配置表按域名匹配、组织标签匹配、subject 与已有 case 做 diff。
+过滤条件为：
+\code{status == new 且联系人存在 且 未被 block 且 不重复}，得到 5 条。
+优先级用三层覆盖：Warning 域名 → Low、Platinum SLA → Critical、
+enterprise 组织标签 → High，其余按 Zendesk priority 映射。
+循环内建 case + 内评 + \code{collect} 账户与优先级，最后 Slack 汇总 5 创建 / 6 跳过
+和 \code{SYNC-OPS-20260210}。结果 16/16、5 轮，\textbf{0 个新节点类型}。
+
+\subsection{发票邮件抽取（备用题，能力补齐）}
+基线 0.40：只记了部分发票、金额未更正。结构逐封读取邮件正文，调用新增的
+\code{extract} 节点把自由文本转成 JSON：
+\code{kind/vendor/invoice/invoice\_date/due\_date/amount/authority/review\_threshold}。
+发票字段不齐会触发一次重试；发票与阻断名单按小写 vendor 做 join；
+合法发票应用 Slack 抽取出的 \code{GL-88210 → 11,340.50} 更正，
+再按 VP 邮件抽取的 \$5,000 阈值写 \code{REVIEW - over threshold}；
+阻断发票给发件人发退回邮件；最后汇总 \code{Logged total: \$16,090.50}。
+结果 5/5、13 轮，\textbf{10 次模型调用}（9 封邮件 + 1 条 Slack 更正）。
+这是本轮唯一调用模型的题：模型只负责“文本 → 字段”，
+阻断规则、阈值覆盖、金额更正、写表与邮件仍由结构决定。
+
+\subsection{\code{extract} 节点}
+\code{extract} 的字段为 \code{prompt/system/schema/model/temperature/maxTokens/
+reasoningEffort/out/required/validate/retries}。执行时渲染模板、调用 OpenAI 兼容
+\code{/chat/completions}、解析 JSON、检查 \code{required}、执行 \code{validate}；
+任一失败就把错误原因追加到 prompt 并重试。结果对象里的 \code{llmCalls}
+记录调用次数。环境变量只读 \code{OPENAI\_BASE\_URL/OPENAI\_API\_KEY/OPENAI\_MODEL}，
+结构 JSON 不存密钥。
+
 \section{消融、迁移与复用}
 
 \subsection{消融}
@@ -473,6 +513,9 @@ Pinnacle → Net 20（邮件修正）、CloudHost → Net 30（Slack）、Metro 
   \item \code{compute/datediff/join}：2 题；
   \item \code{businessdays}：1 题（控制原语，参数无法表达，符合准入规则）。
 \end{itemize}
+补两道备用题后共 194 个节点实例、13 种类型：Zendesk 48 个实例、0 新类型；
+发票题 38 个实例、只新增 \code{extract}。\code{extract} 和 \code{businessdays}
+一样是语义/控制原语，不是某道题的参数。
 
 \section{长序列与循环测试}
 
@@ -501,9 +544,8 @@ checkpoint（every=5, keep=20） & 内存 20 条；磁盘 JSONL 24 条（含被�
 \section{失败反馈与限制}
 \label{sec:limits}
 \begin{itemize}
-  \item 最终 10/10 没有失败项；备用题没有做：
-        \code{finance.invoice_email_extract}（缺 LLM 抽取节点，能力不足）、
-        \code{support.zendesk_sf_case_sync}（三表配置 + diff，主动放弃）；
+  \item 最终 12/12 没有失败项；两道备用题原先没做，本轮已补：
+        Zendesk 用现有节点；发票题新增 \code{extract}，调用模型 10 次；
   \item \textbf{反例}：payment terms 只信表格得 0.571（Pinnacle Net 15、CloudHost 跳过）；
         说明人工读邮件/Slack 证据不可替代；
   \item \textbf{断言通过 $\neq$ 语义完整}：QB 的 10\% 折扣、QuickBooks 实际更新、
@@ -543,8 +585,9 @@ LLM 不控制循环；schema 校验通过才执行；不可逆动作需人工确
 \textbf{AI 做了什么}：读数据、定位断言、起草结构 JSON、实现解释器、跑 harness、写文档。\\
 \textbf{人做了什么}：决定每题结构与规则（Carol、2B-105、Pinnacle Net 20 等）、
 确认断言与语义、能逐题解释为什么这样编排。\\
-\textbf{怎么核实}：官方 \code{partial_credit}、平台 10/10 截图、消融/迁移、循环语义测试。\\
-\textbf{边界}：不是 LLM 端到端生成结构；10 题没有调用模型。
+\textbf{怎么核实}：官方 \code{partial_credit}、平台 12/12 截图、消融/迁移、循环语义测试。\\
+\textbf{边界}：不是 LLM 端到端生成结构；10 主任务 + Zendesk 没有调用模型，
+发票题只在 \code{extract} 节点调用 10 次（文本转字段）。
 
 \section{复现}
 \begin{verbatim}
@@ -556,7 +599,7 @@ cd loop-structures
 python3 harness/run_structure.py \
   --structure structures/hr.monday_onboarding_pipeline.json --restart-bridge
 
-# 10 题全部从平台 UI 跑（需 backend :39910 + dev :3000 + geckodriver）
+# 12 题全部从平台 UI 跑（需 backend :39910 + dev :3000 + geckodriver）
 python3 harness/platform_run.py
 
 # 汇总与统计
@@ -577,16 +620,16 @@ python3 harness/node_usage.py
 \path{loop-structures/docs/01-loop-design.md} & 循环语义 \\
 \path{loop-structures/docs/02-node-taxonomy.md} & 节点分层/准入 \\
 \path{loop-structures/docs/03-patterns.md} & P1--P6 模式 \\
-\path{loop-structures/docs/04-design-rationale.md} & 10 题编排理由 \\
+\path{loop-structures/docs/04-design-rationale.md} & 10 主任务编排理由 \\
 \path{loop-structures/docs/05-reuse.md} & 消融/迁移/节点统计 \\
 \path{loop-structures/docs/06-llm-generation.md} & LLM 生成契约 \\
 \path{loop-structures/docs/07-platform.md} & 平台闭环 \\
 \path{loop-structures/docs/08-long-sequence.md} & 长序列 \\
-\path{loop-structures/docs/09-results.md} & 10 题结果 \\
+\path{loop-structures/docs/09-results.md} & 12 题结果 \\
 \path{loop-structures/docs/10-limitations.md} & 失败反馈 \\
 \path{loop-structures/docs/11-loop-tests.md} & 循环测试 \\
 \path{loop-structures/docs/12-code-walkthrough.md} & 逐行代码走读 \\
-\path{loop-structures/structures/} & 10 题 + 消融/迁移/压力 \\
+\path{loop-structures/structures/} & 12 题 + 消融/迁移/压力 \\
 \path{loop-structures/results/} & CSV、每题 JSON、平台截图 \\
 \path{loop-structures/harness/} & 运行器/统计/导出 \\
 \path{loop-structures/schema/structure.schema.json} & 结构 schema \\

