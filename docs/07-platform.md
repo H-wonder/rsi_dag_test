@@ -34,11 +34,18 @@ fetch ── rows ── pick ── loop1
 
 ## 3. 验证
 
-- 任务：`hr.monday_onboarding_pipeline`
-- 路径：平台页面点“运行” → `/flowTesting-core` 代理 → 后端 `:39910`
-- 结果：`DONE`，2 轮，4/4 断言，score **1.0**
-- 截图：[results/platform-monday.png](../results/platform-monday.png)
-- 后端日志可见：`FLOW_RUN 收到 structure，长度=986` → `status=OK`
+页面上有任务下拉框：
+
+| 任务 | 画布节点 | 结果 | 截图 |
+|---|---|---|---|
+| Monday onboarding | 5 | `DONE`，2 轮，4/4，**1.0** | [platform-monday.png](../results/platform-monday.png) |
+| Overdue follow-up | **13** | `DONE`，7 轮，9/9，**1.0** | [platform-overdue.png](../results/platform-overdue.png) |
+
+路径：平台页面点“运行” → `/flowTesting-core` 代理 → 后端 `:39910`。
+后端日志可见 `FLOW_RUN 收到 structure` → `status=OK`。
+
+Overdue 的画布上能看到：SOQL 取数、账户/备注 join、循环、工作日计算、逾期分支、
+建任务、汇总、发信，共 13 个节点；循环体和分支体用 `edge: false` 的虚线表示。
 
 `getView` 会保留元素 `pendant` 里的自定义字段，因此 `node` / `meta` / `edge` 能原样带回。
 
