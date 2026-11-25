@@ -42,9 +42,11 @@ patch/       四个仓库的 diff 镜像
 - [x] 第 6 题：`operations.space_utilization_analysis`，0.60 → **1.0**（5/5，扫描 41 行）
 - [x] 第 7 题：`hr.zoom_orientation_sessions`，0.67 → **1.0**（6/6，3 轮，I-9 分支）
 - [x] 第 8 题：`finance.vendor_insurance_verification`，0.83 → **1.0**（6/6，4 轮，过期/预警分支）
+- [x] 第 9 题：`operations.mailchimp_ecommerce_sync`，0.71 → **1.0**（7/7，7 轮，标签分支）
+- [x] 第 10 题：`finance.payment_terms_tracking`，0.00 → **1.0**（7/7，5 轮，邮件证据覆盖）
 - [x] 平台闭环：画布 → 结构 → 后端，Monday 1.0，见 [docs/07-platform.md](docs/07-platform.md)
 - [x] 长序列：120 轮压力测试 + 41 行真实任务，见 [docs/08-long-sequence.md](docs/08-long-sequence.md)
-- [ ] 10 题前后对照（8/10）
+- [x] **10 题全部 1.0，见 [docs/09-results.md](docs/09-results.md)**
 - [ ] 消融与迁移
 - [ ] 报告
 
