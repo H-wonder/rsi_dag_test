@@ -44,6 +44,11 @@
 
 状态：`计划` / `实现中` / `已完成`。
 
+> **2026-11-25 实现状态**：`sequence`、`branch`、`loop`（forEach/while/retry）、`assert`、
+> `fetch`、`filter`、`map`、`aggregate`、`rows`、`encode`、`compute`、`join`、
+> `datediff`、`businessdays`、`collect`、`first` 已实现；
+> `fanout`、`extract`、`classify`、`dedupe` 仍为计划。
+
 ### L1 控制
 
 | 节点 | 输入 | 输出 | 关键参数 | 状态 |
