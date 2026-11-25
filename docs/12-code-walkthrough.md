@@ -51,10 +51,10 @@ harness/run_structure.py
 | 位置 | 链接 | 说明 |
 |---|---|---|
 | 结构里的循环节点 | [monday#L34](../structures/hr.monday_onboarding_pipeline.json#L34) | `loop1`：`type: loop`、`items`、`body` |
-| schema 定义 | [structure.schema.json#L223](../schema/structure.schema.json#L223) | `loopNode` 的全部字段 |
+| schema 定义 | [structure.schema.json#L223](../schema/structure.schema.json#L226) | `loopNode` 的全部字段 |
 | 语义设计 | [01-loop-design.md](01-loop-design.md) | 重复/终止/状态/预算/嵌套 |
 | 后端实现 | [LoopRunner.java#L31](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java#L31) | 循环执行（`doLoop` 委托） |
-| 加载时校验 | [StructureExecutor.java#L61](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L61) | 嵌套深度、body 引用 |
+| 加载时校验 | [StructureExecutor.java#L63](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L63) | 嵌套深度、body 引用 |
 
 ### 节点复用在哪
 
@@ -69,10 +69,10 @@ harness/run_structure.py
 | 功能 | 链接 | 行 |
 |---|---|---|
 | 接收 structure | [FlowCodeRun.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java#L33) | 33 |
-| 解释器入口 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L99) | 99 |
-| 循环 | [LoopRunner.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java#L31) | 31（入口委托在 [StructureExecutor#L548](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L548)） |
-| fetch/action | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L196) | 196 |
-| 分支 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L515) | 515 |
+| 解释器入口 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L101) | 99 |
+| 循环 | [LoopRunner.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java#L31) | 31（入口委托在 [StructureExecutor#L548](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L660)） |
+| fetch/action | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L202) | 196 |
+| 分支 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L616) | 515 |
 | `extract` 节点 | [StructureExecutor.java#L447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447) | 447（分发在 194） |
 | 模型客户端 | [ModelClient.java#L51](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/ModelClient.java#L51) | 51 |
 | 表达式/模板 | [Expr.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/Expr.java#L21) | 21/39 |
@@ -139,7 +139,7 @@ harness/run_structure.py
 
 ### 2.1 前端：`runStructure`
 
-[Login/index.tsx:39](../../rsi-flow-platform/src/xpages/Login/index.tsx#L39)
+[Login/index.tsx:39](../../rsi-flow-platform/src/xpages/Login/index.tsx#L40)
 
 ```ts
 const view = getView(diagramRef);              // 当前画布
@@ -153,7 +153,7 @@ setRunResult(parsed);                          // 结果面板
 
 - 节点来自 `pendant.node`，任务信息来自 `pendant.meta`；
 - 循环体/分支体的连线标了 `edge:false`，不会进入 `edges`；
-- 面板代码在 [Login/index.tsx:140](../../rsi-flow-platform/src/xpages/Login/index.tsx#L140)。
+- 面板代码在 [Login/index.tsx:140](../../rsi-flow-platform/src/xpages/Login/index.tsx#L150)。
 
 ### 2.2 后端：`FlowCodeRun`
 
@@ -169,7 +169,7 @@ FlowEngine.instance().register("result", run.toJSONString());
 
 ### 2.3 解释器入口：`run`
 
-[StructureExecutor.java:99](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L99)
+[StructureExecutor.java:99](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L101)
 
 1. `meta.vars` 放进变量表（压力测试用）；
 2. 找 `start` 边指向的第一个节点；
@@ -180,20 +180,21 @@ FlowEngine.instance().register("result", run.toJSONString());
 
 | 类型 | 方法 | 行 |
 |---|---|---|
-| `fetch` / `action` | `doTool` | [196](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L196) |
-| `assert` | `doAssert` | [236](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L236) |
-| `rows` | `doRows` | [246](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L246) |
-| `encode` | `doEncode` | [270](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L270) |
-| `compute` | `doCompute` | [281](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L281) |
-| `first` | `doFirst` | [337](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L337) |
-| `datediff` | `doDateDiff` | [352](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L352) |
-| `businessdays` | `doBusinessDays` | [369](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L369) |
-| `join` | `doJoin` | [391](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L391) |
-| `collect` | `doCollect` | [423](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L423) |
-| `filter` | `doFilter` | [436](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L436) |
-| `map` | `doMap` | [447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447) |
-| `aggregate` | `doAggregate` | [463](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L463) |
-| `branch` | `doBranch` | [515](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L515) |
+| `fetch` / `action` | `doTool` | [196](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L202) |
+| `assert` | `doAssert` | [242](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L236) |
+| `rows` | `doRows` | [252](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L246) |
+| `encode` | `doEncode` | [276](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L270) |
+| `compute` | `doCompute` | [287](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L281) |
+| `first` | `doFirst` | [333](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L337) |
+| `datediff` | `doDateDiff` | [348](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L352) |
+| `businessdays` | `doBusinessDays` | [365](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L369) |
+| `join` | `doJoin` | [387](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L391) |
+| `collect` | `doCollect` | [419](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L423) |
+| `filter` | `doFilter` | [537](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L436) |
+| `map` | `doMap` | [548](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447) |
+| `aggregate` | `doAggregate` | [564](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L463) |
+| `branch` | `doBranch` | [616](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L616) |
+| `extract` | `doExtract` | [447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447) |
 | `loop` | `LoopRunner.run` | [31](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java#L31) |
 
 `doTool` 的两种模式：
@@ -208,12 +209,12 @@ FlowEngine.instance().register("result", run.toJSONString());
 
 | 调用点 | 文件:行 | 做什么 |
 |---|---|---|
-| `fetch` / `action` 节点 | [StructureExecutor.java#L230](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L230) | `bridge.call(tool, args)` → `POST /tool` |
-| `encode` 节点 | [StructureExecutor.java#L273](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L273) | `base64_encode` 也走 bridge |
+| `fetch` / `action` 节点 | [StructureExecutor.java#L237](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L237) | `bridge.call(tool, args)` → `POST /tool` |
+| `encode` 节点 | [StructureExecutor.java#L280](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L280) | `base64_encode` 也走 bridge |
 | 执行完取分 | [FlowCodeRun.java#L53](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java#L53) | `GET /score` |
 | skill flow 的取数 | [FlowCodeFetch.java#L36](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Skill/code/FlowCodeFetch.java#L36) | 由引擎执行的 `api_fetch` |
 
-bridge 地址解析顺序：[StructureExecutor.java:50](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L50)
+bridge 地址解析顺序：[StructureExecutor.java:50](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L52)
 
 ```text
 structure.meta.bridge
@@ -473,7 +474,7 @@ structures/*.json（10 主 + 2 备用；消融/迁移/skill/stress 不导出）
 
 ### 5.3 结果面板
 
-[Login/index.tsx:140](../../rsi-flow-platform/src/xpages/Login/index.tsx#L140)：
+[Login/index.tsx:140](../../rsi-flow-platform/src/xpages/Login/index.tsx#L150)：
 解析 `value.result`，显示 `status / score / assertions` 和 `loops`。
 
 ---
@@ -497,10 +498,10 @@ structures/*.json（10 主 + 2 备用；消融/迁移/skill/stress 不导出）
 ## 7. 推荐阅读顺序
 
 1. [structures/hr.monday_onboarding_pipeline.json](../structures/hr.monday_onboarding_pipeline.json) —— 最简单的 P1；
-2. [StructureExecutor.java:99](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L99) `run()`；
+2. [StructureExecutor.java:99](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L101) `run()`；
 3. [LoopRunner.java:31](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/LoopRunner.java#L31) `run()`；
 4. [FlowCodeRun.java:33](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java#L33)；
-5. [Login/index.tsx:39](../../rsi-flow-platform/src/xpages/Login/index.tsx#L39)；
+5. [Login/index.tsx:39](../../rsi-flow-platform/src/xpages/Login/index.tsx#L40)；
 6. [buildTest.tsx:149](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx#L149)；
 7. [run_structure.py:70](../harness/run_structure.py#L70)；
 8. [schema/structure.schema.json](../schema/structure.schema.json)。
