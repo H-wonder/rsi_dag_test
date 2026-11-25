@@ -32,20 +32,37 @@ fetch ── rows ── pick ── loop1
 
 后端 `FlowCodeRun` 收到后交给 `StructureExecutor`，执行结果写回 `result`。
 
-## 3. 验证
+## 3. 验证：10 题全部从平台运行
 
-页面上有任务下拉框：
+页面下拉框列出 10 个任务，也可以通过 `?task=<task_name>` 直接打开。
+[harnes/platform_run.py](../harness/platform_run.py) 用无头 Firefox 逐题：
 
-| 任务 | 画布节点 | 结果 | 截图 |
-|---|---|---|---|
-| Monday onboarding | 5 | `DONE`，2 轮，4/4，**1.0** | [platform-monday.png](../results/platform-monday.png) |
-| Overdue follow-up | **13** | `DONE`，7 轮，9/9，**1.0** | [platform-overdue.png](../results/platform-overdue.png) |
+1. 启动对应 bridge；
+2. 打开 `/?task=<task>`；
+3. 点击“运行”；
+4. 读取 `/score`；
+5. 保存截图。
 
-路径：平台页面点“运行” → `/flowTesting-core` 代理 → 后端 `:39910`。
+结果：[results/platform-runs.csv](../results/platform-runs.csv)，**10/10 全部 1.0**。
+
+| 任务 | 断言 | 截图 |
+|---|---|---|
+| `finance.payment_terms_tracking` | 7/7 | `results/platform-finance.payment_terms_tracking.png` |
+| `finance.qb_invoice_from_orders` | 5/5 | `results/platform-finance.qb_invoice_from_orders.png` |
+| `finance.revenue_recognition` | 3/3 | `results/platform-finance.revenue_recognition.png` |
+| `finance.vendor_insurance_verification` | 6/6 | `results/platform-finance.vendor_insurance_verification.png` |
+| `hr.monday_onboarding_pipeline` | 4/4 | `results/platform-hr.monday_onboarding_pipeline.png` |
+| `hr.policy_update_distribution` | 4/4 | `results/platform-hr.policy_update_distribution.png` |
+| `hr.zoom_orientation_sessions` | 6/6 | `results/platform-hr.zoom_orientation_sessions.png` |
+| `operations.mailchimp_ecommerce_sync` | 7/7 | `results/platform-operations.mailchimp_ecommerce_sync.png` |
+| `operations.space_utilization_analysis` | 5/5 | `results/platform-operations.space_utilization_analysis.png` |
+| `sales.overdue_followup_flag` | 9/9 | `results/platform-sales.overdue_followup_flag.png` |
+
+路径：平台点“运行” → `/flowTesting-core` 代理 → 后端 `:39910`。
 后端日志可见 `FLOW_RUN 收到 structure` → `status=OK`。
 
-Overdue 的画布上能看到：SOQL 取数、账户/备注 join、循环、工作日计算、逾期分支、
-建任务、汇总、发信，共 13 个节点；循环体和分支体用 `edge: false` 的虚线表示。
+画布由 [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) 从结构 JSON 生成：
+主链从左到右，循环体/分支体放在下方并用 `edge: false` 的连线表示。
 
 `getView` 会保留元素 `pendant` 里的自定义字段，因此 `node` / `meta` / `edge` 能原样带回。
 

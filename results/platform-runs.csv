@@ -1,0 +1,11 @@
+task,clicked,score,assertions,screenshot
+finance.payment_terms_tracking,clicked,1.0,7/7,results/platform-finance.payment_terms_tracking.png
+finance.qb_invoice_from_orders,clicked,1.0,5/5,results/platform-finance.qb_invoice_from_orders.png
+finance.revenue_recognition,clicked,1.0,3/3,results/platform-finance.revenue_recognition.png
+finance.vendor_insurance_verification,clicked,1.0,6/6,results/platform-finance.vendor_insurance_verification.png
+hr.monday_onboarding_pipeline,clicked,1.0,4/4,results/platform-hr.monday_onboarding_pipeline.png
+hr.policy_update_distribution,clicked,1.0,4/4,results/platform-hr.policy_update_distribution.png
+hr.zoom_orientation_sessions,clicked,1.0,6/6,results/platform-hr.zoom_orientation_sessions.png
+operations.mailchimp_ecommerce_sync,clicked,1.0,7/7,results/platform-operations.mailchimp_ecommerce_sync.png
+operations.space_utilization_analysis,clicked,1.0,5/5,results/platform-operations.space_utilization_analysis.png
+sales.overdue_followup_flag,clicked,1.0,9/9,results/platform-sales.overdue_followup_flag.png
