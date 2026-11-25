@@ -343,7 +343,10 @@ flow/Orchestration/flow-add-abs.json -> type:"flow" reference=skill flowId
         链边 \code{edge:true}，body 边 \code{edge:false}；
   \item \code{Login/index.tsx}：下拉框/\code{?task=} 切换；点“运行”后
         \code{getView} 收集 \code{nodes/meta/edges}，POST 给后端；
-  \item 结果面板显示 \code{status | score | assertions} 和 \code{loops}。
+  \item 结果面板显示 \code{status | score | assertions} 和 \code{loops}；
+  \item React 19 兼容：visual-core 依赖的 \code{rc-util/rc-trigger/rc-align}
+        会读取已移除的 \code{element.ref}，已用 pnpm patch 改为 \code{props.ref}，
+        并延迟首次 \code{setView} 避免状态竞争；开发控制台不再报该错误。
 \end{enumerate}
 
 \begin{figure}[h]
