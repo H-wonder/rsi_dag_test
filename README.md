@@ -13,7 +13,7 @@
    [docs/02-node-taxonomy.md](docs/02-node-taxonomy.md)；
 4. 结构归纳为 6 个模式，配一张选择决策树，见
    [docs/03-patterns.md](docs/03-patterns.md)；
-5. 12 个失败任务作为验证集，问题清单见 [docs/problems.md](docs/problems.md)。
+5. 10 个主任务作为验证集（另 2 道备用），问题清单见 [docs/problems.md](docs/problems.md)。
 
 ## 讲解与演示
 
