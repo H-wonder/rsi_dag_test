@@ -44,6 +44,42 @@ harness/run_structure.py
 
 ---
 
+## 0.3 位置速查（先看这三张表）
+
+### 循环结构在哪
+
+| 位置 | 链接 | 说明 |
+|---|---|---|
+| 结构里的循环节点 | [monday#L34](../structures/hr.monday_onboarding_pipeline.json#L34) | `loop1`：`type: loop`、`items`、`body` |
+| schema 定义 | [structure.schema.json#L223](../schema/structure.schema.json#L223) | `loopNode` 的全部字段 |
+| 语义设计 | [01-loop-design.md](01-loop-design.md) | 重复/终止/状态/预算/嵌套 |
+| 后端实现 | [StructureExecutor.java#L543](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L543) | `doLoop()` |
+| 加载时校验 | [StructureExecutor.java#L61](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L61) | 嵌套深度、body 引用 |
+
+### 节点复用在哪
+
+| 位置 | 链接 | 说明 |
+|---|---|---|
+| 统计表 | [05-reuse.md](05-reuse.md) 第 3 节 | 108 实例 / 12 类型 / 92% 复用 |
+| 统计脚本 | [node_usage.py](../harness/node_usage.py) | 重新计算 |
+| 类型→任务明细 | [05-reuse.md](05-reuse.md) 第 3.1 节 | 每种节点被哪些任务使用 |
+
+### 后端实现在哪
+
+| 功能 | 链接 | 行 |
+|---|---|---|
+| 接收 structure | [FlowCodeRun.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/code/FlowCodeRun.java#L33) | 33 |
+| 解释器入口 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L99) | 99 |
+| 循环 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L543) | 543 |
+| fetch/action | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L196) | 196 |
+| 分支 | [StructureExecutor.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L515) | 515 |
+| 表达式/模板 | [Expr.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/Expr.java#L21) | 21/39 |
+| 调 bridge | [BridgeClient.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java#L38) | 38 |
+| 取分 | [BridgeClient.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/BridgeClient.java#L78) | 78 |
+| skill flow | [FlowCodeFetch.java](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Skill/code/FlowCodeFetch.java#L23) | 23 |
+
+---
+
 ## 1. 代码清单
 
 ### 1.1 后端（`rsi-flow-spring-boot`，分支 `feature-wonder`）

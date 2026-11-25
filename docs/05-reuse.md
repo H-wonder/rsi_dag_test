@@ -65,6 +65,25 @@
 | `join` | 2 | 20% |
 | `businessdays` | 1 | 10% |
 
+### 3.1 每种节点被哪些任务使用
+
+短名对应：monday / qb / revenue / policy / overdue / space / zoom / vendor / mailchimp / payment。
+
+| 节点类型 | 任务数 | 任务 |
+|---|---|---|
+| `action` | 10 | 全部 |
+| `fetch` | 10 | 全部 |
+| `loop` | 10 | 全部 |
+| `rows` | 9 | 除 overdue 外全部 |
+| `encode` | 8 | monday 和 mailchimp 之外全部 |
+| `filter` | 8 | payment、mailchimp 之外全部 |
+| `branch` | 5 | overdue、zoom、vendor、mailchimp、payment |
+| `collect` | 4 | overdue、space、vendor、mailchimp |
+| `compute` | 2 | revenue、space |
+| `datediff` | 2 | vendor、mailchimp |
+| `join` | 2 | overdue、mailchimp |
+| `businessdays` | 1 | overdue |
+
 合计 108 个节点实例，12 种类型。
 
 - **复用率**（≥2 题使用）：11/12 = **92%**；
