@@ -68,6 +68,27 @@ fetch ── rows ── pick ── loop1
 下面是最新循环的 `state/perIteration`。截图（发票题因为要等 10 次模型调用，面板会在约 100s 后出现）：
 [platform-score-monday.png](../results/platform-score-monday.png)。
 
+### 3.1 React 19 的 `element.ref` 控制台报错（已修）
+
+现象：页面能加载、能跑出分数，但开发模式控制台报
+`Accessing element.ref was removed in React 19`，堆栈指向 `VisualDiagram`。
+
+原因：`@horsecoder/visual-core` 依赖的老版本 `rc-tooltip / rc-trigger / rc-align /
+rc-util` 会读取 `element.ref`；React 19 把 `ref` 移进 `props`，读取 `element.ref`
+只返回 `undefined` 并打这个警告。它不是业务错误，但会刷控制台。
+
+处理：
+- 用 pnpm patch 修 `rc-util` 的 `getNodeRef`、`rc-trigger` 的 `child.ref`、
+  `rc-align` 的 `childNode.ref`：React 19 下改读 `props.ref`；
+- patch 文件在 [patches/](../../rsi-flow-platform/patches/)，已写入
+  `pnpm.patchedDependencies`，`pnpm install --frozen-lockfile` 可复现；
+- 同时把 `Login/index.tsx` 的首次 `setView` 延迟到 `?task=` 同步之后，
+  避免连续两次 `setView` 造成画布状态竞争。
+
+验证：无头 Firefox 打开 `/?task=support.zendesk_sf_case_sync`、点“运行”，
+控制台 `element.ref` 出现次数为 0，bridge 分数 1.0；发票题同样从 UI 跑出 1.0。
+如果浏览器仍显示旧警告，硬刷新（Ctrl+Shift+R）或重开标签页，清掉旧的 dev chunk。
+
 画布由 [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) 从结构 JSON 生成：
 主链从左到右，循环体/分支体放在下方并用 `edge: false` 的连线表示。
 
