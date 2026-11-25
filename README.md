@@ -34,8 +34,9 @@ patch/       四个仓库的 diff 镜像
 - [x] 模式库（03）
 - [x] 问题清单（12 题）
 - [x] 解释器：loop / sequence / fetch / action / filter / map / aggregate / rows / assert
-- [x] 第 1 题跑通：`hr.monday_onboarding_pipeline`，0.0 → **1.0**（4/4 断言，2 轮）
-- [ ] 10 题前后对照（1/10）
+- [x] 第 1 题：`hr.monday_onboarding_pipeline`，0.0 → **1.0**（4/4，2 轮）
+- [x] 第 2 题：`finance.qb_invoice_from_orders`，0.0 → **1.0**（5/5，3 轮）
+- [ ] 10 题前后对照（2/10）
 - [ ] 消融与迁移
 - [ ] 报告
 

