@@ -194,12 +194,16 @@ def main() -> None:
         driver.close()
 
     csv_path = REPO / "results" / "platform-runs.csv"
-    mode = "a" if args.append and csv_path.exists() else "w"
-    with csv_path.open(mode, newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=["task", "clicked", "score", "assertions", "screenshot"])
-        if mode == "w":
-            writer.writeheader()
-        writer.writerows(rows)
+    fields = ["task", "clicked", "score", "assertions", "screenshot"]
+    existing = []
+    if args.append and csv_path.exists():
+        with csv_path.open(newline="", encoding="utf-8") as fh:
+            done = {r["task"] for r in rows}
+            existing = [r for r in csv.DictReader(fh) if r.get("task") not in done]
+    with csv_path.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(existing + rows)
 
 
 if __name__ == "__main__":
