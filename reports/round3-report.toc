@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {1}目标与结论}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}目标}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}结论}{3}{subsection.1.2}%
+\contentsline {section}{\numberline {2}现状：平台原生没有循环}{3}{section.2}%
+\contentsline {section}{\numberline {3}循环语义设计}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}三种模式}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}帧与状态}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}终止与预算}{4}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}嵌套与失败}{4}{subsection.3.4}%
+\contentsline {section}{\numberline {4}系统实现}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}架构}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}后端代码}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}节点}{4}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}平台闭环}{5}{subsection.4.4}%
+\contentsline {section}{\numberline {5}10 个任务的结果}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}为什么能修好}{5}{subsection.5.1}%
+\contentsline {section}{\numberline {6}消融与迁移}{6}{section.6}%
+\contentsline {subsection}{\numberline {6.1}消融：去掉循环}{6}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}迁移：held-out 新题}{6}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}节点复用}{6}{subsection.6.3}%
+\contentsline {section}{\numberline {7}长序列与循环测试}{6}{section.7}%
+\contentsline {section}{\numberline {8}失败反馈与限制}{6}{section.8}%
+\contentsline {section}{\numberline {9}下一阶段：LLM 生成结构}{7}{section.9}%
+\contentsline {subsection}{\numberline {9.1}输入}{7}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}约束}{7}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}判定}{7}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}哪些必须人工}{7}{subsection.9.4}%
+\contentsline {section}{\numberline {10}AI 使用与核实}{7}{section.10}%
+\contentsline {section}{\numberline {11}复现}{7}{section.11}%
+\contentsline {section}{\numberline {A}文件索引}{8}{appendix.A}%

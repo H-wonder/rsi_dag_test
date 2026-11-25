@@ -4,6 +4,7 @@
 > 所有数字来自 [09-results.md](09-results.md)，所有证据文件都在本仓库。
 > 本文偏“怎么讲”；**逐行代码、每个任务在哪实现，见
 > [12-code-walkthrough.md](12-code-walkthrough.md)**。
+> PDF：[reports/Round3-Loop-Structures-Report.pdf](../reports/Round3-Loop-Structures-Report.pdf)。
 
 ## 0. 一句话
 
