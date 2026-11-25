@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "task": "ablation.finance.qb_invoice_from_orders",
+    "benchmark": "finance.qb_invoice_from_orders",
+    "domain": "finance",
+    "pattern": "P1",
+    "kind": "ablation",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "消融：去掉循环，只处理第一张 Delivered 订单（顺序结构）"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_orders/values/February 2026!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    { "id": "rows", "type": "rows", "items": "{{sheet.values}}", "out": "orders" },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "orders",
+      "when": "item.Status == 'Delivered'",
+      "out": "due"
+    },
+    { "id": "first", "type": "first", "items": "due", "itemVar": "o", "out": "one" },
+    {
+      "id": "invoice",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://quickbooks.api.intuit.com/v3/company/1/invoice",
+        "body": {
+          "CustomerRef": { "value": "{{o.Customer}}" },
+          "Line": [{ "DetailType": "SalesItemLineDetail", "Amount": "{{o.Unit_Price}}" }],
+          "PrivateNote": "{{o.Order_}}"
+        }
+      }
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "Order {{o.Order_}} total {{o.Unit_Price}}",
+      "out": "body_b64"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              { "name": "To", "value": "{{o.Customer_Email}}" },
+              { "name": "Subject", "value": "Invoice {{o.Order_}}" }
+            ],
+            "body": { "data": "{{body_b64}}" }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch"],
+    ["fetch", "rows"],
+    ["rows", "pick"],
+    ["pick", "first"],
+    ["first", "invoice"],
+    ["invoice", "encode"],
+    ["encode", "send"]
+  ]
+}

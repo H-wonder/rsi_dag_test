@@ -16,7 +16,7 @@ FIELDS = ["task", "domain", "pattern", "baseline_score", "structured_score",
 def main() -> None:
     rows = []
     for path in sorted(RESULTS.glob("*.json")):
-        if path.name.startswith("stress.") or path.name == "before-after.csv":
+        if path.name.startswith("stress.") or (path.name.startswith("ablation.") or path.name.startswith("transfer.")) or path.name == "before-after.csv":
             continue
         data = json.loads(path.read_text())
         if "run" not in data or "score" not in data:

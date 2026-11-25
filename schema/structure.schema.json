@@ -156,6 +156,9 @@
         },
         {
           "$ref": "#/$defs/assertNode"
+        },
+        {
+          "$ref": "#/$defs/firstNode"
         }
       ]
     },
@@ -713,6 +716,33 @@
           "required": [
             "value",
             "stateKey"
+          ]
+        }
+      ]
+    },
+    "firstNode": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "first"
+            },
+            "items": {
+              "$ref": "#/$defs/expr"
+            },
+            "itemVar": {
+              "type": "string"
+            },
+            "out": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "items",
+            "out"
           ]
         }
       ]

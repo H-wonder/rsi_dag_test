@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "task": "transfer.support.zoho_multitenant_isolation",
+    "benchmark": "support.zoho_multitenant_isolation",
+    "domain": "support",
+    "pattern": "P6",
+    "kind": "transfer",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "迁移验证：用已有的 fetch/rows/join/filter/loop/append/comment 节点，把 ticket 的实际账户与映射表期望账户对比，记录违规并加评论；未新增节点类型"
+  },
+  "nodes": [
+    {
+      "id": "fetch_tickets",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": { "method": "GET", "url": "https://desk.zoho.com/api/v1/tickets" },
+      "out": "tickets"
+    },
+    {
+      "id": "fetch_mapping",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_tenant/values/Tenant Mapping!A1:Z100"
+      },
+      "out": "mapping_sheet"
+    },
+    { "id": "rows_mapping", "type": "rows", "items": "{{mapping_sheet.values}}", "out": "mapping" },
+    {
+      "id": "fetch_shared",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_tenant/values/Shared Service Accounts!A1:Z100"
+      },
+      "out": "shared_sheet"
+    },
+    { "id": "rows_shared", "type": "rows", "items": "{{shared_sheet.values}}", "out": "shared" },
+    {
+      "id": "join_map",
+      "type": "join",
+      "items": "{{tickets}}",
+      "with": "mapping",
+      "leftKey": "contact_id",
+      "rightKey": "Contact_ID",
+      "fields": { "Expected": "Tenant_Account_ID", "Contact": "Contact_ID" },
+      "out": "mapped"
+    },
+    {
+      "id": "join_shared",
+      "type": "join",
+      "items": "mapped",
+      "with": "shared",
+      "leftKey": "account_id",
+      "rightKey": "Account_ID",
+      "setFound": "shared",
+      "out": "checked"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "checked",
+      "when": "not item.shared and item.Expected != null and item.Expected != item.account_id",
+      "out": "violations"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "violations",
+      "itemVar": "t",
+      "body": ["append_row", "comment"],
+      "maxIterations": 50,
+      "onError": "continue",
+      "checkpoint": { "every": 1, "keep": 20 }
+    },
+    {
+      "id": "append_row",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_tenant/values/Isolation Violations!A1:F1:append",
+        "params": { "valueInputOption": "RAW" },
+        "body": {
+          "values": [
+            ["{{t.id}}", "{{t.subject}}", "{{t.Contact}}", "{{t.Expected}}", "{{t.account_id}}", "Open"]
+          ]
+        }
+      }
+    },
+    {
+      "id": "comment",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://desk.zoho.com/api/v1/tickets/{{t.id}}/comments",
+        "body": {
+          "content": "Multi-tenant isolation violation: expected account {{t.Expected}}, actual account {{t.account_id}}.",
+          "isPublic": false
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch_tickets"],
+    ["fetch_tickets", "fetch_mapping"],
+    ["fetch_mapping", "rows_mapping"],
+    ["rows_mapping", "fetch_shared"],
+    ["fetch_shared", "rows_shared"],
+    ["rows_shared", "join_map"],
+    ["join_map", "join_shared"],
+    ["join_shared", "pick"],
+    ["pick", "loop1"]
+  ]
+}

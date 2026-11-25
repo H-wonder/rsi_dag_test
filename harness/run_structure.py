@@ -79,15 +79,16 @@ def main() -> None:
     structure = json.loads(path.read_text())
     meta = structure.get("meta", {})
     task = meta.get("task")
+    benchmark_task = meta.get("benchmark") or task
     domain = meta.get("domain")
-    if not task or not domain:
+    if not task or not benchmark_task or not domain:
         raise SystemExit("structure.meta 需要 task 和 domain")
 
     structure.setdefault("meta", {})["bridge"] = args.bridge
     bridge_proc = None
     if args.restart_bridge:
         port = int(args.bridge.rsplit(":", 1)[-1])
-        bridge_proc = start_bridge(task, domain, port)
+        bridge_proc = start_bridge(benchmark_task, domain, port)
 
     try:
         started = time.time()
@@ -107,10 +108,11 @@ def main() -> None:
 
         record = {
             "task": task,
+            "benchmark": benchmark_task,
             "domain": domain,
             "pattern": meta.get("pattern"),
             "structure": str(path.relative_to(REPO)),
-            "baseline_score": baseline_score(task),
+            "baseline_score": baseline_score(benchmark_task),
             "structured_score": score.get("score"),
             "assertions_passed": score.get("assertions_passed"),
             "assertions_total": score.get("assertions_total"),

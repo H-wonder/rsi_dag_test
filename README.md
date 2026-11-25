@@ -47,7 +47,9 @@ patch/       四个仓库的 diff 镜像
 - [x] 平台闭环：10 题全部从平台运行并得分（[platform-runs.csv](results/platform-runs.csv)），见 [docs/07-platform.md](docs/07-platform.md)
 - [x] 长序列：120 轮压力测试 + 41 行真实任务，见 [docs/08-long-sequence.md](docs/08-long-sequence.md)
 - [x] **10 题全部 1.0，见 [docs/09-results.md](docs/09-results.md)**
-- [ ] 消融与迁移
+- [x] 消融 2 题 + 迁移 2 题 + 节点统计，见 [docs/05-reuse.md](docs/05-reuse.md)
+- [ ] 编排理由（04）
+- [ ] LLM 生成契约（06）
 - [ ] 报告
 
 ## 相关链接

