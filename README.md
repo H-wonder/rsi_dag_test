@@ -50,7 +50,7 @@ patch/       四个仓库的 diff 镜像
 - [x] 编排理由：[docs/04-design-rationale.md](docs/04-design-rationale.md)
 - [x] 消融 2 题 + 迁移 2 题 + 节点统计，见 [docs/05-reuse.md](docs/05-reuse.md)
 - [x] LLM 生成契约：[docs/06-llm-generation.md](docs/06-llm-generation.md)
-- [ ] 失败反馈 / 限制说明
+- [x] 失败反馈与限制：[docs/10-limitations.md](docs/10-limitations.md)
 - [ ] 报告与提交
 
 ## 相关链接

