@@ -5,3 +5,4 @@ finance.revenue_recognition,finance,P3,0.75,0.0,0,3,2,0.14
 finance.revenue_recognition,finance,P3,0.75,0.0,0,3,2,0.02
 finance.revenue_recognition,finance,P3,0.75,0.0,0,3,2,0.14
 finance.revenue_recognition,finance,P3,0.75,1.0,3,3,2,0.14
+hr.policy_update_distribution,hr,P1,0.25,1.0,4,4,2,0.02

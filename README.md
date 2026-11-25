@@ -37,7 +37,8 @@ patch/       四个仓库的 diff 镜像
 - [x] 第 1 题：`hr.monday_onboarding_pipeline`，0.0 → **1.0**（4/4，2 轮）
 - [x] 第 2 题：`finance.qb_invoice_from_orders`，0.0 → **1.0**（5/5，3 轮）
 - [x] 第 3 题：`finance.revenue_recognition`，0.75 → **1.0**（3/3，2 轮）
-- [ ] 10 题前后对照（3/10）
+- [x] 第 4 题：`hr.policy_update_distribution`，0.25 → **1.0**（4/4，2 轮）
+- [ ] 10 题前后对照（4/10）
 - [ ] 消融与迁移
 - [ ] 报告
 
