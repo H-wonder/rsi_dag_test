@@ -1,0 +1,45 @@
+# loop-structures
+
+第三轮任务的提交仓库：**在原生不支持循环的 rsi-flow 平台上，定义循环语义、提炼可复用的结构与节点，并用 AutomationBench 的失败任务验证。**
+
+本仓库同时是四个项目（`rsi-flow`、`rsi-flow-spring-boot`、`rsi-flow-platform`、`rsi-flow-visual`）`feature-wonder` 分支改动的镜像。
+
+## 核心结论（随进度更新）
+
+1. 平台没有循环：`Executor` 是 DAG 队列，画布没有循环容器；
+2. 因此循环必须是**结构层的显式节点**，由解释器执行，语义契约见
+   [docs/01-loop-design.md](docs/01-loop-design.md)；
+3. 节点分三层（控制 / 数据与 LLM / app 动作），业务规则参数化，见
+   [docs/02-node-taxonomy.md](docs/02-node-taxonomy.md)；
+4. 结构归纳为 6 个模式，配一张选择决策树，见
+   [docs/03-patterns.md](docs/03-patterns.md)；
+5. 12 个失败任务作为验证集，问题清单见 [docs/problems.md](docs/problems.md)。
+
+## 目录
+
+```text
+docs/        设计文档与结果分析
+schema/      结构 JSON schema
+structures/  各任务的结构（含消融、迁移）
+harness/     起 bridge、跑结构、取分数
+results/     前后对照 CSV、运行日志
+reports/     报告 PDF
+patch/       四个仓库的 diff 镜像
+```
+
+## 状态
+
+- [x] 循环语义契约（01）
+- [ ] 节点分类（02）
+- [ ] 模式库（03）
+- [ ] 问题清单
+- [ ] 解释器实现
+- [ ] 10 题前后对照
+- [ ] 消融与迁移
+- [ ] 报告
+
+## 相关链接
+
+- 目标：[../notes/target.md](../notes/target.md)
+- 计划：[../notes/round3-plan.md](../notes/round3-plan.md)
+- 循环设计（笔记版）：[../notes/round3-loop-design.md](../notes/round3-loop-design.md)

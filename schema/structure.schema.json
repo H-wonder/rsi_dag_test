@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/loop-structures/structure.schema.json",
+  "title": "rsi-flow loop structure",
+  "type": "object",
+  "required": ["meta", "nodes"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["task", "domain", "pattern"],
+      "additionalProperties": false,
+      "properties": {
+        "task": { "type": "string", "examples": ["finance.qb_invoice_from_orders"] },
+        "domain": { "type": "string" },
+        "pattern": { "enum": ["P1", "P2", "P3", "P4", "P5", "P6"] },
+        "allowPartial": { "type": "boolean", "default": false },
+        "description": { "type": "string" }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [{ "type": "string" }, { "type": "string" }],
+        "minItems": 2,
+        "maxItems": 2
+      }
+    }
+  },
+  "$defs": {
+    "expr": { "type": "string", "description": "JEXL / JSONPath 表达式" },
+    "nodeId": { "type": "string" },
+    "body": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "按顺序执行的节点 id"
+    },
+    "base": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "direct": { "type": "boolean", "default": false }
+      }
+    },
+    "node": {
+      "oneOf": [
+        { "$ref": "#/$defs/sequenceNode" },
+        { "$ref": "#/$defs/branchNode" },
+        { "$ref": "#/$defs/loopNode" },
+        { "$ref": "#/$defs/fetchNode" },
+        { "$ref": "#/$defs/filterNode" },
+        { "$ref": "#/$defs/mapNode" },
+        { "$ref": "#/$defs/aggregateNode" },
+        { "$ref": "#/$defs/actionNode" },
+        { "$ref": "#/$defs/llmNode" },
+        { "$ref": "#/$defs/assertNode" }
+      ]
+    },
+    "sequenceNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "sequence" },
+            "body": { "$ref": "#/$defs/body" }
+          },
+          "required": ["body"]
+        }
+      ]
+    },
+    "branchNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "branch" },
+            "cases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["when", "body"],
+                "properties": {
+                  "when": { "$ref": "#/$defs/expr" },
+                  "body": { "$ref": "#/$defs/body" }
+                }
+              }
+            },
+            "default": { "$ref": "#/$defs/body" }
+          },
+          "required": ["cases"]
+        }
+      ]
+    },
+    "loopNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "loop" },
+            "mode": { "enum": ["forEach", "while", "retry"], "default": "forEach" },
+            "items": { "$ref": "#/$defs/expr" },
+            "condition": { "$ref": "#/$defs/expr" },
+            "itemVar": { "type": "string", "default": "item" },
+            "indexVar": { "type": "string", "default": "i" },
+            "body": { "$ref": "#/$defs/body" },
+            "state": { "type": "object" },
+            "breakWhen": { "$ref": "#/$defs/expr" },
+            "continueWhen": { "$ref": "#/$defs/expr" },
+            "maxIterations": { "type": "integer", "minimum": 1, "maximum": 300 },
+            "onError": { "enum": ["continue", "abort", "retry"], "default": "continue" },
+            "maxAttempts": { "type": "integer", "minimum": 1, "default": 2 },
+            "allowPartial": { "type": "boolean", "default": false },
+            "checkpoint": {
+              "type": "object",
+              "properties": {
+                "every": { "type": "integer", "minimum": 1, "default": 1 },
+                "keep": { "type": "integer", "minimum": 1, "default": 20 }
+              }
+            }
+          },
+          "required": ["body"]
+        }
+      ]
+    },
+    "fetchNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "fetch" },
+            "method": { "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"], "default": "GET" },
+            "url": { "type": "string" },
+            "params": { "type": "object" },
+            "body": { "type": ["object", "string", "null"] },
+            "out": { "type": "string" }
+          },
+          "required": ["url", "out"]
+        }
+      ]
+    },
+    "filterNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "filter" },
+            "items": { "$ref": "#/$defs/expr" },
+            "when": { "$ref": "#/$defs/expr" },
+            "out": { "type": "string" }
+          },
+          "required": ["items", "when", "out"]
+        }
+      ]
+    },
+    "mapNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "map" },
+            "items": { "$ref": "#/$defs/expr" },
+            "fields": { "type": "object" },
+            "out": { "type": "string" }
+          },
+          "required": ["items", "fields", "out"]
+        }
+      ]
+    },
+    "aggregateNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "aggregate" },
+            "items": { "$ref": "#/$defs/expr" },
+            "op": { "enum": ["count", "sum", "min", "max", "avg", "group"] },
+            "field": { "type": "string" },
+            "by": { "type": "string" },
+            "out": { "type": "string" }
+          },
+          "required": ["items", "op", "out"]
+        }
+      ]
+    },
+    "actionNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "action" },
+            "action": { "type": "string", "examples": ["gmail.send", "sheets.append"] },
+            "args": { "type": "object" },
+            "out": { "type": "string" }
+          },
+          "required": ["action"]
+        }
+      ]
+    },
+    "llmNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "llm" },
+            "prompt": { "type": "string" },
+            "schema": { "type": "object" },
+            "out": { "type": "string" }
+          },
+          "required": ["prompt", "out"]
+        }
+      ]
+    },
+    "assertNode": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "assert" },
+            "expr": { "$ref": "#/$defs/expr" },
+            "message": { "type": "string" }
+          },
+          "required": ["expr"]
+        }
+      ]
+    }
+  }
+}
