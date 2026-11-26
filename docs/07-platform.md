@@ -65,8 +65,8 @@ fetch ── rows ── pick ── loop1
 后端日志可见 `FLOW_RUN 收到 structure` → `FLOW_RUN score=...` → `status=OK`。
 
 页面运行后会显示一个黑色结果面板：`status | score | assertions`，
-下面是最新循环的 `state/perIteration`。截图（发票题因为要等 10 次模型调用，面板会在约 100s 后出现）：
-[platform-score-monday.png](../results/platform-score-monday.png)。
+下面是最新循环的 `state/perIteration`。截图（Zendesk：16/16，面板同时显示循环 state）：
+[platform-support.zendesk_sf_case_sync.png](../results/platform-support.zendesk_sf_case_sync.png)。
 
 ### 3.1 React 19 的 `element.ref` 控制台报错（已修）
 

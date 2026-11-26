@@ -3,3 +3,7 @@ __pycache__/
 .env
 *.log
 results/*.jsonl
+reports/*.aux
+reports/*.out
+reports/*.toc
+reports/round3-report.pdf
