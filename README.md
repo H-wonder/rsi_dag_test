@@ -69,7 +69,7 @@ reports/     报告 PDF 与 LaTeX 源
 - 解释器：`rsi-flow-spring-boot` 的 `Run/structure/`
   （`StructureExecutor`、`LoopRunner`、`NodeSupport`、`Expr`、`BridgeClient`、`ModelClient`）；
 - 前端：`rsi-flow-platform` 的 `src/xpages/Login/`（画布、运行、结果面板、
-  `test/buildTest.tsx`、`test/structures.ts`）；
+  `test/buildTest.tsx`、`test/structures.ts`（生成））；
 - bridge：[code/bridge/world_bridge.py](code/bridge/world_bridge.py)（来源 `automationbench-baseline/scripts/world_bridge.py`）；
 - 引擎 `rsi-flow` 没有改；循环不在引擎里。
 
