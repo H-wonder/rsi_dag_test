@@ -16,7 +16,8 @@
 ```text
 code/
 ├── backend/     rsi-flow-spring-boot 的相关文件
-└── platform/    rsi-flow-platform 的相关文件
+├── platform/    rsi-flow-platform 的相关文件
+└── bridge/      automationbench-baseline/scripts/world_bridge.py
 ```
 
 ## backend 文件
@@ -45,6 +46,12 @@ FlowCodeRun
       → NodeSupport / Expr
     → BridgeClient
 ```
+
+## bridge
+
+| 文件 | 来源 | 说明 |
+|---|---|---|
+| `bridge/world_bridge.py` | `automationbench-baseline` | 持有 AutomationBench WorldState，提供 `/tool`、`/score`、`/state`；Java 与 Python 的适配层 |
 
 ## platform 文件
 
