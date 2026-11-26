@@ -58,19 +58,28 @@ FlowCodeRun
 | 文件 | 来源 | 说明 |
 |---|---|---|
 | `src/xpages/Login/index.tsx` | 我们修改 | 任务下拉、运行按钮、getView→结构、结果面板、首次 setView 顺序 |
+| `src/xpages/Login/wrapper.tsx` | 模板原有 | 页面入口（`'use client'`） |
+| `src/xpages/Login/types.tsx` | 模板原有 | 页面 props 类型 |
+| `src/xpages/Login/index.module.css` | 模板原有 | 页面样式 |
+| `src/xpages/Login/handler/handler/diagramHandler.ts` | 模板原有 | 对 `VisualDiagram` ref 的 `getView/setView` 封装 |
 | `src/xpages/Login/test/buildTest.tsx` | 我们新增 | 结构 JSON → 画布 elements/links（body 边 `edge:false`） |
+| `src/xpages/Login/test/structures.ts` | 生成文件（快照） | 12 题结构数据；由 harness 从 `structures/*.json` 生成 |
 | `src/flows/.../Run/index.ts` | 原有 | `flowRunFacade` 的 HTTP 封装 |
+| `src/utils/axios/index.ts` | 模板原有 | axios 实例与响应拦截器（`value.result`） |
+| `src/components/StandardModelEntity/wrapper.tsx` | 模板原有 | 画布节点渲染包装 |
+| `src/components/StandardModelLink/wrapper.tsx` | 模板原有 | 画布连线渲染包装 |
 | `next.config.ts` | 我们修改 | dev 代理 `/flowTesting-core` → `:39910`；`proxyTimeout=300s` |
 | `package.json` | 我们修改 | `pnpm.patchedDependencies`，指向 React 19 兼容补丁 |
 | `patches/rc-*.patch` | 我们新增 | `rc-util/rc-trigger/rc-align` 改读 `props.ref` |
 
-没有复制 `src/xpages/Login/test/structures.ts`（3025 行生成文件）。它由：
+`src/xpages/Login/test/structures.ts` 是 3025 行的生成文件，这里放了一份快照方便直接读平台数据；
+它的权威源仍是：
 
 ```bash
 python3 loop-structures/harness/export_platform_structures.py
 ```
 
-从 `loop-structures/structures/*.json` 生成；评审可以直接看结构 JSON，或运行脚本重新生成。
+从 `loop-structures/structures/*.json` 生成；如果快照过期，以脚本重新生成的结果为准。
 
 ## 如何放回原仓库
 
@@ -105,7 +114,7 @@ cd rsi-flow-spring-boot
 
 - `rsi-flow` 引擎：未改，不需要评审 diff；
 - `rsi-flow-visual` 源码：未改；只有 platform 的 pnpm patch；
-- `structures.ts`：生成文件，源在 `structures/`；
+- `structures.ts` 的源：`structures/*.json`（快照已包含生成结果）；
 - harness、文档、结果、报告：在仓库根目录，不在 `code/`；
 - 任何密钥/`.env`/数据库密码：不进入仓库。
 
