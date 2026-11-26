@@ -1,0 +1,37 @@
+{
+  "id": "@com.horsecoder.common.whuTalent.flowTesting.core/FLOW_SKILL_FETCH",
+  "name": "FLOW_SKILL_FETCH",
+  "type": "flow",
+  "title": "通用取数 skill",
+  "description": "把 api_fetch 包装成引擎可执行的 skill",
+  "params": [
+    { "title": "方法", "name": "method", "type": "String", "notnull": true },
+    { "title": "URL", "name": "url", "type": "String", "notnull": true },
+    { "title": "查询参数", "name": "paramsJson", "type": "String", "notnull": false },
+    { "title": "请求体", "name": "bodyJson", "type": "String", "notnull": false }
+  ],
+  "results": [
+    { "title": "结果", "name": "result", "type": "String", "notnull": false }
+  ],
+  "nodes": [
+    {
+      "id": "FLOW_NODE_FETCH",
+      "type": "event",
+      "title": "执行 api_fetch",
+      "reference": "FLOW_CODE_FETCH",
+      "params": [
+        { "title": "方法", "name": "method", "type": "String", "notnull": true },
+        { "title": "URL", "name": "url", "type": "String", "notnull": true },
+        { "title": "查询参数", "name": "paramsJson", "type": "String", "notnull": false },
+        { "title": "请求体", "name": "bodyJson", "type": "String", "notnull": false }
+      ],
+      "results": [
+        { "title": "结果", "name": "result", "type": "String", "notnull": false }
+      ]
+    }
+  ],
+  "routes": [
+    { "source": "start", "target": "FLOW_NODE_FETCH", "condition": "true" },
+    { "source": "FLOW_NODE_FETCH", "target": "end", "condition": "true" }
+  ]
+}

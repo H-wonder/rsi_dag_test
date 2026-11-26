@@ -1,0 +1,30 @@
+diff --git a/es/Align.js b/es/Align.js
+index 8420eb4aa730517ee5eb141c2c331ff0d267580a..26f0d30c42b84f2744aaff84dfc32342ed0dcbc6 100644
+--- a/es/Align.js
++++ b/es/Align.js
+@@ -153,8 +153,9 @@ var Align = function Align(_ref, ref) {
+   }); // ===================== Render =====================
+ 
+   if ( /*#__PURE__*/React.isValidElement(childNode)) {
++    var childRef = childNode.props && Object.prototype.hasOwnProperty.call(childNode.props, 'ref') ? childNode.props.ref : parseInt(String(React.version || '19').split('.')[0], 10) >= 19 ? null : childNode.ref;
+     childNode = /*#__PURE__*/React.cloneElement(childNode, {
+-      ref: composeRef(childNode.ref, nodeRef)
++      ref: composeRef(childRef, nodeRef)
+     });
+   }
+ 
+diff --git a/lib/Align.js b/lib/Align.js
+index 4f917fc7b8bdbb086e06b10cbf8b01e4ae21e018..531c9ca4fb7babeaac7ca7a5357c2cad6b9e3524 100644
+--- a/lib/Align.js
++++ b/lib/Align.js
+@@ -184,8 +184,9 @@ var Align = function Align(_ref, ref) {
+ 
+ 
+   if ( /*#__PURE__*/_react.default.isValidElement(childNode)) {
++    var childRef = childNode.props && Object.prototype.hasOwnProperty.call(childNode.props, 'ref') ? childNode.props.ref : parseInt(String(_react.default.version || '19').split('.')[0], 10) >= 19 ? null : childNode.ref;
+     childNode = /*#__PURE__*/_react.default.cloneElement(childNode, {
+-      ref: (0, _ref2.composeRef)(childNode.ref, nodeRef)
++      ref: (0, _ref2.composeRef)(childRef, nodeRef)
+     });
+   }
+ 

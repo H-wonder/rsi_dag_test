@@ -84,6 +84,11 @@ harness/run_structure.py
 
 ## 1. 代码清单
 
+> 评审不需要切换四个仓库：backend/platform 的相关文件快照在
+> [code/README.md](../code/README.md)，包含来源、分支、commit 和文件作用。
+
+
+
 ### 1.1 后端（`rsi-flow-spring-boot`，分支 `feature-wonder`）
 
 | 文件 | 状态 | 作用 |

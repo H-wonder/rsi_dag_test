@@ -1,0 +1,37 @@
+diff --git a/es/ref.js b/es/ref.js
+index 7ccaf2c4cbbcd8402b9dae9eb2db1bafcf907306..8b9a5c6b288526e4f11aa1b9104411e8bf640912 100644
+--- a/es/ref.js
++++ b/es/ref.js
+@@ -82,7 +82,12 @@ export var getNodeRef = function getNodeRef(node) {
+ 
+     // Source from:
+     // https://github.com/mui/material-ui/blob/master/packages/mui-utils/src/getReactNodeRef/getReactNodeRef.ts
+-    return ele.props.propertyIsEnumerable('ref') ? ele.props.ref : ele.ref;
++    if (ele.props && Object.prototype.hasOwnProperty.call(ele.props, 'ref')) {
++      return ele.props.ref;
++    }
++
++    var major = parseInt(String(_react.version || '19').split('.')[0], 10);
++    return major >= 19 ? null : ele.ref;
+   }
+   return null;
+ };
+\ No newline at end of file
+diff --git a/lib/ref.js b/lib/ref.js
+index 181f4bf094bfe84fa733e4ec0879c483f8c18d55..98853e66be8c8e22d3180024938193ff8f90a099 100644
+--- a/lib/ref.js
++++ b/lib/ref.js
+@@ -89,7 +89,12 @@ var getNodeRef = exports.getNodeRef = function getNodeRef(node) {
+ 
+     // Source from:
+     // https://github.com/mui/material-ui/blob/master/packages/mui-utils/src/getReactNodeRef/getReactNodeRef.ts
+-    return ele.props.propertyIsEnumerable('ref') ? ele.props.ref : ele.ref;
++    if (ele.props && Object.prototype.hasOwnProperty.call(ele.props, 'ref')) {
++      return ele.props.ref;
++    }
++
++    var major = parseInt(String(_react.version || '19').split('.')[0], 10);
++    return major >= 19 ? null : ele.ref;
+   }
+   return null;
+ };

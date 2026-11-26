@@ -1,0 +1,28 @@
+diff --git a/es/index.js b/es/index.js
+index 5a23a9748b83486b0924468028de32d1a3f4de27..646e3d5e2edfd22898c37fff72c20a6d047b6f55 100644
+--- a/es/index.js
++++ b/es/index.js
+@@ -763,7 +763,8 @@ export function generateTrigger(PortalComponent) {
+         var cloneProps = _objectSpread({}, newChildProps);
+ 
+         if (supportRef(child)) {
+-          cloneProps.ref = composeRef(this.triggerRef, child.ref);
++          var childRef = child.props && Object.prototype.hasOwnProperty.call(child.props, 'ref') ? child.props.ref : parseInt(String(React.version || '19').split('.')[0], 10) >= 19 ? null : child.ref;
++          cloneProps.ref = composeRef(this.triggerRef, childRef);
+         }
+ 
+         var trigger = /*#__PURE__*/React.cloneElement(child, cloneProps);
+diff --git a/lib/index.js b/lib/index.js
+index 765ae505a7df5b207d31538d489167b69ece93bd..fbb5df281295e8b5f5b0622364c85dd2590ee84b 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -759,7 +759,8 @@ function generateTrigger(PortalComponent) {
+         var cloneProps = (0, _objectSpread2.default)({}, newChildProps);
+ 
+         if ((0, _ref2.supportRef)(child)) {
+-          cloneProps.ref = (0, _ref2.composeRef)(this.triggerRef, child.ref);
++          var childRef = child.props && Object.prototype.hasOwnProperty.call(child.props, 'ref') ? child.props.ref : parseInt(String(React.version || '19').split('.')[0], 10) >= 19 ? null : child.ref;
++          cloneProps.ref = (0, _ref2.composeRef)(this.triggerRef, childRef);
+         }
+ 
+         var trigger = /*#__PURE__*/React.cloneElement(child, cloneProps);

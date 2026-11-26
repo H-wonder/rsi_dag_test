@@ -54,6 +54,7 @@ python3 harness/run_structure.py \
 
 ```text
 docs/        设计文档、代码走读、结果与限制
+code/        backend/platform 代码快照（方便评审，不切换仓库）
 schema/      结构 JSON schema
 structures/  12 题结构 + 消融/迁移/skill/压力测试
 harness/     起 bridge、跑结构、批量平台运行、统计与导出
@@ -63,6 +64,7 @@ reports/     报告 PDF 与 LaTeX 源
 
 ## 代码在哪
 
+- **代码快照**：[code/README.md](code/README.md)（backend + platform 相关文件，带来源/分支/commit）
 - 逐行代码走读：[docs/12-code-walkthrough.md](docs/12-code-walkthrough.md)
 - 解释器：`rsi-flow-spring-boot` 的 `Run/structure/`
   （`StructureExecutor`、`LoopRunner`、`NodeSupport`、`Expr`、`BridgeClient`、`ModelClient`）；
