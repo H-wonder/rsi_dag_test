@@ -29,26 +29,149 @@
    [docs/problems.md](docs/problems.md)、[docs/09-results.md](docs/09-results.md)、
    [docs/10-limitations.md](docs/10-limitations.md)。
 
-## 快速开始
+## 如何运行
 
-```bash
-# 1) 后端 :39910 + 前端 :3000（见 docs/00-presentation-guide.md）
-# 2) 起某道题的 bridge（在四项目工作区，即本仓库的上一级；一道题一个进程）
-cd ../automationbench-baseline
-uv run --project ../datasets/AutomationBench python scripts/world_bridge.py \
-  --domain hr --task hr.monday_onboarding_pipeline --port 8765
+### 0. 目录假设
 
-# 3) 打开平台，点“运行”
-# http://localhost:3000/?task=hr.monday_onboarding_pipeline
+以下命令假设四个项目在同一个工作区（本仓库的上一级）：
 
-# 或者不走前端，直接跑结构并取分
-cd ../loop-structures
-python3 harness/run_structure.py \
-  --structure structures/hr.monday_onboarding_pipeline.json --restart-bridge
+```text
+multi_agent/
+├── automationbench-baseline/   # bridge 脚本
+├── datasets/AutomationBench/   # AutomationBench 数据集与 Python 环境
+├── loop-structures/            # 本仓库
+├── rsi-flow-spring-boot/       # 后端
+├── rsi-flow-platform/          # 前端
+└── rsi-flow-visual/            # 画布库
 ```
 
-发票题的 `extract` 节点需要后端环境变量
-`OPENAI_BASE_URL` / `OPENAI_API_KEY` / `OPENAI_MODEL`；密钥不写入仓库。
+以下命令默认从 `multi_agent/` 工作区**根目录**执行；如果你当前在 `loop-structures/`
+里，先 `cd ..`。
+
+本仓库**不包含** AutomationBench 数据集和 bridge 脚本本身；bridge 的代码快照在
+[code/bridge/world_bridge.py](code/bridge/world_bridge.py)，运行需要上面的工作区。
+
+### 1. 起后端和前端
+
+```bash
+# 终端 A：后端 :39910（平台 dev 代理目标）
+cd rsi-flow-spring-boot
+java -jar core-starter/target/core-starter-1.0.0-executable.jar \
+  --spring.profiles.active=test --server.port=39910 \
+  --spring.datasource.url='jdbc:mysql://127.0.0.1:3306/flowtest?...' \
+  --spring.datasource.username=flowtest --spring.datasource.password=<local> \
+  --eureka.client.register-with-eureka=false --eureka.client.fetch-registry=false
+
+# 终端 B：前端 :3000
+cd rsi-flow-platform
+pnpm dev
+```
+
+详细启动参数和 MySQL 配置见 [docs/00-presentation-guide.md](docs/00-presentation-guide.md)。
+
+### 2. 起 bridge（重点）
+
+bridge 是**一道题一个进程**：它加载这道题的 `initial_state`，持有运行中的世界状态，
+并提供 `/tool`、`/score`、`/state`。后端只通过它取数、写数据、算分。
+
+```bash
+# 终端 C：以 Monday 为例
+cd automationbench-baseline
+
+uv run --project ../datasets/AutomationBench python scripts/world_bridge.py \
+  --domain hr \
+  --task hr.monday_onboarding_pipeline \
+  --port 8765
+```
+
+看到这行就说明启动成功：
+
+```text
+world bridge: hr.monday_onboarding_pipeline on http://127.0.0.1:8765
+```
+
+另开终端检查：
+
+```bash
+curl -s http://127.0.0.1:8765/health
+# {"ok": true, "task": "hr.monday_onboarding_pipeline"}
+```
+
+#### 任务对应的 domain
+
+| 任务 | `--domain` |
+|---|---|
+| `hr.monday_onboarding_pipeline` | `hr` |
+| `finance.qb_invoice_from_orders` | `finance` |
+| `finance.revenue_recognition` | `finance` |
+| `finance.vendor_insurance_verification` | `finance` |
+| `finance.payment_terms_tracking` | `finance` |
+| `finance.invoice_email_extract` | `finance` |
+| `hr.policy_update_distribution` | `hr` |
+| `hr.zoom_orientation_sessions` | `hr` |
+| `sales.overdue_followup_flag` | `sales` |
+| `operations.space_utilization_analysis` | `operations` |
+| `operations.mailchimp_ecommerce_sync` | `operations` |
+| `support.zendesk_sf_case_sync` | `support` |
+
+也可以直接看 `structures/<task>.json` 的 `meta.domain`。
+
+#### 切题、重跑、停止
+
+- **切题**：先 `Ctrl+C` 停掉当前 bridge，再起新任务的 bridge；
+- **重跑**：bridge 是内存状态，重复点“运行”会在上一次结果上继续写，可能重复建记录。
+  想从干净状态重跑，重启 bridge；
+- **端口占用**：`Address already in use` 说明旧 bridge 没停，可 `fuser -k 8765/tcp`；
+- **不要一个 bridge 跑两道题**：世界状态会串。
+
+#### 看 bridge 内部
+
+```bash
+curl -s http://127.0.0.1:8765/task   | python3 -m json.tool   # prompt/工具/断言数
+curl -s http://127.0.0.1:8765/score  | python3 -m json.tool   # 分数/每条断言
+curl -s http://127.0.0.1:8765/state  | python3 -m json.tool   # 当前世界状态
+```
+
+### 3. 前端点“运行”
+
+打开：
+
+```text
+http://localhost:3000/?task=hr.monday_onboarding_pipeline
+```
+
+点“运行”，几秒后黑色面板显示：
+
+```text
+status: OK | score: 1 | assertions: 4/4
+```
+
+发票题要等约 100 秒（10 次模型调用），并且后端需要：
+
+```text
+OPENAI_BASE_URL
+OPENAI_API_KEY
+OPENAI_MODEL=gpt-5.6-sol
+```
+
+密钥不写入仓库。平台 dev 代理已设 `proxyTimeout=300s`，不会 30 秒被截断。
+
+### 4. 不走前端：直接跑结构
+
+`run_structure.py` 会自动起停 bridge（要求后端在 `:39910`）：
+
+```bash
+cd loop-structures
+python3 harness/run_structure.py \
+  --structure structures/hr.monday_onboarding_pipeline.json \
+  --restart-bridge
+```
+
+批量从平台 UI 跑（需要 geckodriver）：
+
+```bash
+python3 harness/platform_run.py
+```
 
 ## 目录
 

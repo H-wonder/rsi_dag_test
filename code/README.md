@@ -53,6 +53,18 @@ FlowCodeRun
 |---|---|---|
 | `bridge/world_bridge.py` | `automationbench-baseline` | 持有 AutomationBench WorldState，提供 `/tool`、`/score`、`/state`；Java 与 Python 的适配层 |
 
+启动方式（一道题一个进程，在四项目工作区）：
+
+```bash
+cd automationbench-baseline
+uv run --project ../datasets/AutomationBench python scripts/world_bridge.py \
+  --domain hr --task hr.monday_onboarding_pipeline --port 8765
+curl -s http://127.0.0.1:8765/health
+```
+
+完整的任务/domain 表、切题、重跑、端口占用和 `/score` 调试见
+[../README.md](../README.md) 的“2. 起 bridge（重点）”。
+
 ## platform 文件
 
 | 文件 | 来源 | 说明 |
