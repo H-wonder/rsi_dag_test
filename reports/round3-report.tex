@@ -11,6 +11,7 @@
 \usepackage{enumitem}
 \usepackage{amsmath}
 \usepackage{hyperref}
+\usepackage{float}
 \hypersetup{colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black}
 \captionsetup{font=small}
 \setlist{nosep,leftmargin=1.6em}
@@ -33,6 +34,7 @@
 \sloppy
 \setlength{\emergencystretch}{3em}
 \maketitle
+\pagestyle{plain}
 
 \begin{abstract}
 本轮目标是在 \code{rsi-flow-platform} 上人工编排结构，修复 AutomationBench 中至少 10 个具体问题，
@@ -63,22 +65,26 @@
   \item 下一阶段：去掉人工，让 LLM 在对应场景下自主生成结构。
 \end{enumerate}
 
+下面五节一一对应上述五项：第~\ref{sec:problems}~节对应问题清单，第~\ref{sec:loop}~节对应循环方法，
+第~\ref{sec:results}~节对应平台编排与前后对照，第~\ref{sec:limits}~节对应失败反馈，
+第~\ref{sec:llm}~节对应 LLM 生成设想。第~\ref{sec:impl}~节补系统实现，第~7--8~节补复用与长序列证据。
+
 \subsection{验收映射}
-\begin{longtable}{p{0.26\textwidth}p{0.42\textwidth}p{0.24\textwidth}}
+\begingroup\small\setlength{\tabcolsep}{2pt}\begin{longtable}{p{0.05\textwidth}p{0.18\textwidth}p{0.47\textwidth}p{0.22\textwidth}}
 \toprule
-要求 & 证据 & 位置 \\
+目标 & 要求 & 本报告的对应内容 & 证据文件 \\
 \midrule
-10 条可判定问题 & 12 条（10 主 + 2 备），含期望断言与基线失败明细 & \code{docs/problems.md} \\
-前后对照 & 12/12 全部 1.0，77/77 断言 & \code{docs/09-results.md}, \path{results/before-after.csv} \\
-平台人工编排 & 12 题从平台“运行”得到 1.0，每题一张截图 & \code{docs/07-platform.md}, \path{results/platform-runs.csv} \\
-循环：重复/终止/状态 & 语义设计 + 实现 + 测试 & \code{docs/01}, \code{docs/11} \\
-长序列 & 120 轮压力测试；41 行真实任务 & \code{docs/08} \\
-失败反馈 & 备用题补齐过程、naive 0.571、断言 $\neq$ 语义 & \code{docs/10} \\
-方法复用 & 消融 2 题 + held-out 迁移 2 题 & \code{docs/05} \\
-LLM 生成设想 & 输入/约束/判定/人工边界 & \code{docs/06} \\
-AI 使用与核实 & 第~\ref{sec:ai} 节 & 本报告 \\
+\endhead
+1 & 至少 10 个可判定问题 & 第~\ref{sec:problems}~节：12 题逐题列出输入、期望断言、基线失败原因；附判定口径 & \code{docs/problems.md} \\
+2 & 循环方法：重复/终止/状态/长序列 & 第~\ref{sec:loop}~节：三种模式、帧、终止优先级、状态生命周期、Monday 轨迹、120/41 长序列 & \code{docs/01}, \code{docs/11} \\
+3 & 平台人工编排 + 前后对照 & 第~\ref{sec:results}~节：12 题总表、同输入对照表、逐题结构与截图；第~\ref{sec:impl}~节：点击路径 & \path{results/platform-runs.csv}, \code{docs/07} \\
+4 & 失败反馈：没修/为什么/分类 & 第~\ref{sec:limits}~节：当前分类、中间失败、断言≠语义、有意放弃/能力不足 & \code{docs/10} \\
+5 & 下一阶段 LLM 生成 & 第~\ref{sec:llm}~节：输入包、输出契约、校验/修复流水线、判定函数、失败模式、实验设计 & \code{docs/06} \\
+额外 & 方法复用 & 消融 2 题、迁移 2 题、节点统计 & \code{docs/05} \\
+额外 & AI 使用与核实 & 第~\ref{sec:ai}~节 & 本报告 \\
 \bottomrule
 \end{longtable}
+\endgroup
 
 \subsection{结论}
 \begin{itemize}
@@ -92,10 +98,100 @@ AI 使用与核实 & 第~\ref{sec:ai} 节 & 本报告 \\
         发票题只在语义抽取处调模型，规则仍由结构表达。
 \end{itemize}
 
+\section{问题清单：12 个可判定问题}
+\label{sec:problems}
+
+\subsection{什么算“可判定”}
+本题的“可判定”不是“看起来做完了”，而是满足三个条件：
+\begin{enumerate}
+  \item 初始状态固定：题目给出确定的 Gmail/Sheets/CRM/工单数据，每次运行从同一份
+        \code{initial\_state} 开始；
+  \item 期望输出可写成断言：官方 rubric 用字段/字符串/数量比对，例如
+        \code{monday\_action\_exists}、\code{google\_sheets\_row\_exists}、
+        \code{gmail\_message\_sent\_to}、\code{salesforce\_case\_exists}；
+  \item 分数可复算：\code{partial\_credit} 输出 0--1，负向断言（\code{*\_not\_exists}、
+        \code{*\_not\_sent}）按官方口径排除计分，但仍作为“不能做错”的约束。
+\end{enumerate}
+基线是任务一的 max-effort 直接 Agent（\code{gpt-5.6-sol}），结构是同一初始状态下
+我们编排的 JSON；两者只差“怎么执行”，不差输入。
+
+\subsection{12 题总表：输入、期望、基线失败}
+\begingroup\scriptsize\setlength{\tabcolsep}{2pt}
+\begin{longtable}{p{0.03\textwidth}p{0.21\textwidth}p{0.19\textwidth}p{0.30\textwidth}p{0.19\textwidth}}
+\toprule
+\# & 任务 & 输入（初始状态要点） & 期望输出（计分断言要点） & 基线失败原因 \\
+\midrule
+\endhead
+1 & \path{hr.monday_onboarding_pipeline} &
+1 张新员工表；含 Contractor、延期备注 &
+2 条 Monday item（Alicia/Tyrone，含部门）；不得建 Mei-Ling/Derek &
+0/4：一条 item 都没建 \\
+2 & \path{finance.qb_invoice_from_orders} &
+订单表 + 4 个 QuickBooks 客户；含 Returned 订单 &
+Pinnacle/Coastal/Vanguard 发票 + 对应邮件；不得给 Meridian 开票 &
+0/5：没有发票、没有邮件 \\
+3 & \path{finance.revenue_recognition} &
+合同表；含未开始/非 Active 合同 &
+CTR-001 10,000、CTR-002 6,000；不得写 CTR-003；汇总邮件 16,000 &
+3/4：多写了 CTR-003 \\
+4 & \path{hr.policy_update_distribution} &
+员工表、政策表、Slack 消息 &
+remote 员工 Bob 收到 1,500/10 AM；Marcus 收到；Carol 等不收到 &
+1/4：Bob 缺金额/时间，Marcus 没收到 \\
+5 & \path{sales.overdue_followup_flag} &
+任务/账户/备注三张表；状态字段不可信 &
+3 个逾期任务各建 OVERDUE 任务 + 2 封汇总邮件 &
+4/9：3 个任务、2 封邮件缺失 \\
+6 & \path{operations.space_utilization_analysis} &
+41 行房间表；含 Renovation/executive/2B-105 &
+3 间低利用率房间 + 未用座位 46.55 + 邮件/Slack &
+3/5：缺房间明细和总数 \\
+7 & \path{hr.zoom_orientation_sessions} &
+入职表；I-9 已交/未交混合 &
+I-9=Yes 建会/注册/确认；No 上报 HR + 通知本人 &
+4/6：关键邮件缺失 \\
+8 & \path{finance.vendor_insurance_verification} &
+保险证书表；含过期/将到期/Inactive &
+过期改 Non-Compliant + 通知；30 天内提醒；汇总 &
+5/6：状态列/邮件不完整 \\
+9 & \path{operations.mailchimp_ecommerce_sync} &
+订单表 + opt-out 表；含 refund/cancel/内部单 &
+3 个买家打 new/repeat/vip/high 标签 + Slack 汇总 &
+5/7：标签/Slack 文案缺 \\
+10 & \path{finance.payment_terms_tracking} &
+供应商表 + 邮件/Slack 证据 &
+Pinnacle Net 20、CloudHost Net 30、Metro 2/10 Net 30、其余表值 +
+7 封通知 &
+0/7：没有按证据修正条款 \\
+11 & \path{finance.invoice_email_extract} &
+9 封邮件、Blocked Vendors 表、1 条 Slack 金额更正 &
+Acme 4,750、GL 11,340.50 + REVIEW；不记 ShadowPeak/Acme Solutions；
+2 封退回；汇总 16,090.5 &
+2/5：漏行、金额未更正 \\
+12 & \path{support.zendesk_sf_case_sync} &
+14 张 ticket、3 张配置表、联系人/账户/已有 case &
+5 条 case（优先级/账户正确）、5 条内评、总数 6、Slack 5/6/Critical/批次号 &
+12/16：漏 1 条 case、计数与通知不一致 \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{这 12 题覆盖了哪些失败类型}
+\begin{itemize}
+  \item \textbf{覆盖不足}：Monday、QB、Payment Terms 的基线是 0 分——不是理解错，
+        而是一条都没做/只做了一部分，循环直接补齐；
+  \item \textbf{过滤错误}：Revenue、Policy、Space、Vendor 的失败是“多写/漏写某些行”，
+        关键在“哪些不该做”；
+  \item \textbf{规则分层}：Overdue 的状态字段不可信、Zendesk 的优先级三层覆盖，
+        必须 join 多张表后再判断；
+  \item \textbf{自由文本}：Invoice 的发票字段、Policy 的金额/时间只能从邮件正文抽取，
+        这是本轮唯一需要 \code{extract} 的题。
+\end{itemize}
+
 \section{背景：平台原生没有循环}
 
 \subsection{三处现状}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{lXX}
@@ -123,10 +219,10 @@ AI 使用与核实 & 第~\ref{sec:ai} 节 & 本报告 \\
 \end{itemize}
 这决定了方法：先补齐覆盖率（循环），再用过滤/分支保证“不做不该做的”。
 
-\section{循环语义设计}
+\section{循环语义设计}\label{sec:loop}
 
 \subsection{三种模式}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{lXX}
@@ -185,11 +281,104 @@ vars[indexVar]   = index
 \end{itemize}
 
 \subsection{checkpoint}
-\code{checkpoint: \{every, keep, file\}}：
+\code{checkpoint: every/keep/file}：
 内存保留最近 \code{keep} 条，磁盘 JSONL 保留全部；
 120 轮压力测试中内存 20 条、磁盘 24 条（every=5）。
 
-\section{系统实现}
+\subsection{一次循环的完整轨迹（Monday）}
+以 \code{hr.monday\_onboarding\_pipeline} 为例，过滤后剩 2 人，循环节点
+\code{loop1} 的 \code{items=due}、\code{itemVar=h}、\code{body=[create]}：
+\begin{center}\small
+\begin{tabular}{cccccl}
+\toprule
+轮次 & \code{frame.index} & \code{h} & \code{loop.state} & body & 结果 \\
+\midrule
+1 & 0 & 第 1 个新人 & \code{created:0} & \code{create} & \code{perIteration[0]=ok} \\
+2 & 1 & 第 2 个新人 & \code{created:0} & \code{create} & \code{perIteration[1]=ok} \\
+-- & 2 & -- & 不变 & 不执行 & \code{index>=count}，\code{DONE} \\
+\bottomrule
+\end{tabular}
+\end{center}
+最终 \code{summary = status:DONE, iterations:2, succeeded:2, failed:0}，
+注册为 \code{vars["loop\_loop1"]}；下游可用
+\code{loop\_loop1.state.created} 或 \code{perIteration} 读循环结果。
+\code{created} 在这个任务里没被 \code{compute accumulate} 更新，所以保持 0；
+它展示了“初始 state”而不是“必须使用的字段”。
+
+\subsection{终止优先级矩阵}
+每轮严格按“集合/条件 $\to$ max $\to$ 墙钟 $\to$ breakWhen $\to$ continueWhen $\to$ body”
+的顺序判断，先命中先停：
+\begin{longtable}{p{0.21\textwidth}p{0.17\textwidth}p{0.29\textwidth}p{0.21\textwidth}}
+\toprule
+触发条件 & 状态 & 默认结果 & 声明 \code{allowPartial} 后 \\
+\midrule
+\endhead
+forEach 耗尽 / while 为假 & \code{DONE} & 结构继续，正常 & 同左 \\
+\code{breakWhen} 为真 & \code{BROKEN} & 结构继续，正常 & 同左 \\
+达到 \code{maxIterations} & \code{EXHAUSTED} & 整体 \code{ERROR} & \code{OK + partial=true} \\
+超过 \code{wallClockMs} & \code{TIMEOUT} & 整体 \code{ERROR} & \code{OK + partial=true} \\
+\code{abort} / 失败数达 \code{maxFailures} & \code{FAILED} & 整体 \code{ERROR} & \code{OK + partial=true} \\
+\bottomrule
+\end{longtable}
+“先判断集合/条件，再判断 max”保证了即使 \code{maxIterations=0} 也会先检查一次输入，
+不会把空集合误报成 \code{EXHAUSTED}。
+
+\subsection{状态放在哪里、活多久}
+\begin{longtable}{p{0.22\textwidth}p{0.28\textwidth}p{0.40\textwidth}}
+\toprule
+位置 & 生命周期 & 用途/可见性 \\
+\midrule
+\endhead
+\code{vars[itemVar]} & 单轮 & body 节点用模板 \code{h.Name} 取当前项 \\
+\code{vars[indexVar]} & 单轮 & body/条件用模板 \code{i} 取当前下标 \\
+\code{vars["loop"]} & 整个循环 & frame：\code{index/count/current/state} \\
+\code{frame.state} & 整个循环 & \code{collect}、\code{compute accumulate} 写这里；跨轮保留 \\
+\code{summary.perIteration} & 循环结束后 & 每轮 \code{i/item/status/ms/error} \\
+\code{summary.failures} & 循环结束后 & 失败轮次的索引、item、错误 \\
+\code{summary.checkpoints} & 循环结束后 & 内存环形缓冲（最近 \code{keep} 条） \\
+\code{loop\_<id>} & 循环结束后 & 下游节点读 summary；如 \code{loop\_loop1} \\
+\bottomrule
+\end{longtable}
+嵌套循环时，内层会覆盖 \code{loop/itemVar/indexVar}；\code{LoopRunner} 在进入前保存、
+在 \code{finally} 中恢复，因此外层循环的 \code{state} 和当前项不会被内层污染。
+
+\subsection{长序列为什么不丢上下文}
+长序列的风险不是“循环次数多”，而是三件事：
+\begin{enumerate}
+  \item \textbf{漏项}：\code{items} 是一次性求值的数组，\code{index} 单调递增，
+        没有“跳过未处理项”的路径；
+  \item \textbf{状态丢}：累加器放在 \code{frame.state}，是同一个 JSON 对象，
+        每轮读写的是同一份引用；\code{collect} 追加到同一个键；
+  \item \textbf{失败静默}：每轮失败会写 \code{perIteration/failures}，
+        超过 \code{maxFailures} 或 \code{abort} 才停；不会“看起来跑完但其实少做了”。
+\end{enumerate}
+实测：120 项 forEach 跑满 120 轮，\code{perIteration} 120 条；
+Space 任务扫描 41 行，3 间命中，\code{state.total=46.55}；
+Zendesk 5 轮、发票题 13 轮，均在 \code{maxIterations} 内正常 \code{DONE}。
+
+\subsection{retry 的边界}
+\code{onError=retry} 重跑的是\textbf{整个 body}，不是单个节点。因此：
+\begin{itemize}
+  \item 适合：先读取/校验、后写入的幂等结构；或 \code{extract} 这种“失败就重新抽取”的节点；
+  \item 不适合：body 里已经建了 case/发了邮件，重试会重复产生副作用；
+  \item 安全做法：把 \code{assert}/\code{validate} 放在写操作之前，或让动作本身幂等
+        （先查再建、按唯一键 upsert）。
+\end{itemize}
+发票题的 \code{extract} 用 \code{validate + retries} 做了实测：故意要求一个不存在的字段，
+\code{llmCalls=2}，最终返回 \code{extract 失败（2 次）: 缺少字段 must\_exist}。
+
+\subsection{设计取舍：为什么不在引擎层加循环}
+把循环做进 \code{rsi-flow} 引擎需要改 \code{Executor} 的队列语义、节点校验和画布回边，
+还要发布新的 \code{flow-core} 版本；而下一阶段 LLM 生成的产物是“结构数据”，
+不是引擎代码。把循环放在解释器里：
+\begin{itemize}
+  \item 引擎保持原样，风险最小；
+  \item 循环语义、预算、checkpoint 可以快速迭代；
+  \item 结构 JSON 可以被平台、harness、LLM 共用；
+  \item 代价是循环能力只对“结构解释器”生效，不是引擎的通用能力——这是有意的边界。
+\end{itemize}
+
+\section{系统实现}\label{sec:impl}
 
 \subsection{总架构}
 \begin{verbatim}
@@ -235,7 +424,7 @@ vars[indexVar]   = index
         \code{FlowCodeRun.flowCodeRun(String structure)}；
   \item \code{FlowCodeRun} 用 fastjson 解析字符串，交给 \code{StructureExecutor.run()}；
   \item 执行完调用 bridge \code{/score}，把结果一起写进 \code{result}；
-  \item \code{FlowHolder} 校验出参，Service 取出 \code{\{result: "<json>"\}}，Controller 包装返回。
+  \item \code{FlowHolder} 校验出参，Service 取出 \code{result: "<json>"}，Controller 包装返回。
 \end{enumerate}
 
 \subsection{后端代码结构}
@@ -243,6 +432,7 @@ vars[indexVar]   = index
 \toprule
 文件 & 行数 & 职责 \\
 \midrule
+\endhead
 \code{FlowCodeRun.java} & -- & 接收 structure，调用解释器，取分，写 result \\
 \code{StructureExecutor.java} & 583 & 解析/校验/节点分发/数据与动作节点 \\
 \code{LoopRunner.java} & 204 & 循环帧、终止、预算、状态、checkpoint \\
@@ -258,6 +448,7 @@ vars[indexVar]   = index
 \toprule
 节点 & 层 & 作用 & 任务数 \\
 \midrule
+\endhead
 \code{fetch} & L2 & 调 \code{api_fetch} & 10 \\
 \code{rows} & L2 & Sheets 二维数组转对象，附加 \code{_row} & 9 \\
 \code{filter} & L2 & JEXL 行级过滤 & 8 \\
@@ -279,7 +470,7 @@ vars[indexVar]   = index
 
 \subsection{bridge}
 bridge 是 Python 侧的一个常驻 HTTP 服务，持有\textbf{一个任务}的 WorldState：
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{lX}
@@ -288,7 +479,7 @@ bridge 是 Python 侧的一个常驻 HTTP 服务，持有\textbf{一个任务}�
 \midrule
 \code{GET /health} & 启动等待 \\
 \code{GET /task} & prompt、工具列表 \\
-\code{POST /tool} & \code{\{name, arguments\}} 执行工具 \\
+\code{POST /tool} & \code{name, arguments} 执行工具 \\
 \code{GET /score} & 官方 \code{partial_credit} + 断言结果 \\
 \code{GET /state} & 当前 WorldState（调试） \\
 \bottomrule
@@ -319,7 +510,7 @@ flow/Orchestration/flow-add-abs.json -> type:"flow" reference=skill flowId
 
 \subsection{代码来源}
 \code{feature-wonder} 基于 \code{dev_examples}（\code{5483cf7}）：
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{lX}
@@ -349,22 +540,22 @@ flow/Orchestration/flow-add-abs.json -> type:"flow" reference=skill flowId
         并延迟首次 \code{setView} 避免状态竞争；开发控制台不再报该错误。
 \end{enumerate}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{../results/platform-support.zendesk_sf_case_sync.png}
 \caption{平台运行 Zendesk 同步任务：三张配置表 + 用户/组织/联系人/已有 case 的 join 与 diff，结果面板 \code{16/16}。}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{../results/platform-sales.overdue_followup_flag.png}
 \caption{Overdue 任务的 13 节点画布（局部）：SOQL、join、循环、工作日、条件分支、建任务、写 state、汇总发信；结果 \code{9/9}。}
 \end{figure}
 
-\section{十二个任务的编排与结果}
+\section{十二个任务的编排与结果}\label{sec:results}
 
 \subsection{总表}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{rlcccc}
@@ -389,6 +580,31 @@ flow/Orchestration/flow-add-abs.json -> type:"flow" reference=skill flowId
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{同一输入的前后对照}
+基线 Agent 和我们的结构都从题目同一份 \code{initial\_state} 开始；跑结构前 bridge
+重新加载该状态，不复用基线已经写入的内容。因此“前后”只差执行方式：
+基线是模型直接调工具，结构是解释器按 JSON 调同一批 bridge 工具。
+
+\begin{longtable}{p{0.19\textwidth}p{0.24\textwidth}p{0.31\textwidth}p{0.16\textwidth}}
+\toprule
+任务 & 基线未过（关键） & 结构修复动作 & 结果 \\
+\midrule
+\endhead
+Monday & 0/4，无 item & 过滤 Contractor/延期备注，循环建 2 条 & 4/4 \\
+QB invoice & 0/5，无发票/邮件 & 只处理 Delivered，循环开票 + 发信 & 5/5 \\
+Revenue & 多写 CTR-003 & 过滤 Active 且开始月份 $\le$ 2026-01 & 3/3 \\
+Policy & Bob 缺金额/时间，Marcus 缺信 & 按 remote + 政策表逐人发信；Carol 排除 & 4/4 \\
+Overdue & 3 任务 + 2 汇总缺 & join 账户/备注，按工作日和 extension 分支 & 9/9 \\
+Space & 缺房间明细/总数 & 41 行全扫，算 used/unused 并累加 & 5/5 \\
+Zoom & 2 封邮件缺 & 按 I-9 分支建会/注册/上报 & 6/6 \\
+Vendor & 状态/邮件不全 & 按 datediff 分过期/30 天/正常 & 6/6 \\
+Mailchimp & 标签/Slack 缺 & join opt-out，按首购/复购/高价值分支 & 7/7 \\
+Payment & 0/7，条款全错 & 邮件/Slack 证据覆盖表值，逐供应商分支 & 7/7 \\
+Invoice & 漏行、金额未更正 & 逐封 \code{extract}，阻断 join，Slack 更正 & 5/5 \\
+Zendesk & 漏 1 条 case、计数错 & 三表 join + diff + 优先级覆盖，循环建 case & 16/16 \\
+\bottomrule
+\end{longtable}
 
 \subsection{Monday onboarding}
 基线 0/4：没有建任何 item。结构：
@@ -430,7 +646,7 @@ I-9=Yes → 建会/注册/确认信；I-9=No → 上报 HR Director + 通知本�
 \subsection{Vendor insurance}
 基线 0.83。结构：\code{filter(Active) $\to$ loop(datediff $\to$ branch)}：
 \code{days < 0} → 改 Non-Compliant + 通知；\code{days <= 30} → 提醒；最后汇总 + Slack。
-改状态用 \code{PUT Certificates!E\{_row\}}；结果 6/6、4 轮。
+改状态用 \code{PUT Certificates!E}\{\_row\}；结果 6/6、4 轮。
 
 \subsection{Mailchimp sync}
 基线 0.71。结构：
@@ -479,7 +695,7 @@ reasoningEffort/out/required/validate/retries}。执行时渲染模板、调用 
 \section{消融、迁移与复用}
 
 \subsection{消融}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{lccc}
@@ -493,7 +709,7 @@ reasoningEffort/out/required/validate/retries}。执行时渲染模板、调用 
 \end{table}
 
 \subsection{迁移}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{lcccc}
@@ -522,7 +738,7 @@ reasoningEffort/out/required/validate/retries}。执行时渲染模板、调用 
 
 \section{长序列与循环测试}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{lX}
@@ -546,42 +762,215 @@ checkpoint（every=5, keep=20） & 内存 20 条；磁盘 JSONL 24 条（含被�
 
 \section{失败反馈与限制}
 \label{sec:limits}
+
+\subsection{当前状态：12/12，但“失败”仍分三类}
+最终 12 题都是 \code{1.0}，但这不等于所有语义都完整实现。按“没修/为什么”分为：
+\begin{longtable}{p{0.22\textwidth}p{0.18\textwidth}p{0.50\textwidth}}
+\toprule
+项 & 分类 & 说明 \\
+\midrule
+\endhead
+Zendesk 同步 & 已补（原主动放弃） & 三表配置 + diff；用现有节点完成，16/16 \\
+发票抽取 & 已补（原能力不足） & 新增 \code{extract}；10 次模型调用，5/5 \\
+QB 10\% 折扣 & 有意简化 & 断言不查折扣行；优先覆盖“每单开票 + 发信” \\
+QuickBooks 实际更新 & 有意简化 & 只建发票，不改 QuickBooks 内部状态；断言不查 \\
+Notion 正文 & 有意简化 & 只写标题/属性，正文不展开；断言不查 \\
+部分 Slack 文案 & 有意简化 & 汇总包含关键数字/批次号，不追求逐字模板 \\
+负向断言 & 官方排除 & \code{*\_not\_exists}/\code{*\_not\_sent} 不计分，但仍尽量满足 \\
+嵌套循环真实任务 & 能力有，未验证 & 解释器支持 2 层，只做过 smoke test \\
+业务循环 retry & 部分验证 & \code{extract} 的 validate/retry 已实测；业务 body 只测过断言失败 \\
+skill flow 覆盖 & 有意取舍 & 只有 \code{fetch} 走引擎；其余动作直连 bridge \\
+平台在线编辑 & 外部依赖 & 缺工具栏/表单模块，画布只能展示 \\
+多次运行方差 & 未做 & 基线/结构都是单次运行；发票题有模型非确定性 \\
+LLM/工具预算 & 未做 & 有 \code{wallClockMs/maxFailures}，没有 token/调用次数预算 \\
+\bottomrule
+\end{longtable}
+
+\subsection{开发过程中的中间失败}
+这些不是最终结果，但能说明“结构不是一次写对的”：
+\begin{longtable}{p{0.20\textwidth}p{0.12\textwidth}p{0.36\textwidth}p{0.22\textwidth}}
+\toprule
+任务 & 中间分 & 原因 & 修复 \\
+\midrule
+\endhead
+Revenue & 0.0 & 金额 \code{\$120,000} 未去 \code{\$}/逗号，parseDouble 得 0 & 支持货币符号/逗号 \\
+Space & 0.8 & 只算“已用座位”，没算“未用” & 补 \code{capacity - used} \\
+Vendor & 0.5→0.83 & \code{datediff} 未打进 jar；状态写到 F 列 & 重启后端；改 E 列 \\
+Zoom & 0.0 & I-9 列别名写成 \code{I9\_Submitted} & 改为 \code{I\_9\_Submitted} \\
+Zendesk & 0.0 & 噪声 ticket 的 requester 为空，域名字符串调用 NPE & 先过滤 \code{requester\_id != null} \\
+Zendesk & 0.875 & Slack 模板引用了 \code{loop\_cases}，实际变量是 \code{loop\_loop\_cases} & 改模板变量名 \\
+Invoice & 0.4 & Gmail 发送用了扁平 \code{body}，API 要求 \code{payload} & 改用 base64 payload \\
+Invoice & 0.8 & \code{aggregate} 的 field 写成 \code{amount}，应写 \code{item.amount} & 改 field 表达式 \\
+Invoice & 重试 & 故意要一个不存在的字段 & \code{llmCalls=2}，错误可见地失败 \\
+\bottomrule
+\end{longtable}
+
+\subsection{断言通过 $\neq$ 语义完整}
 \begin{itemize}
-  \item 最终 12/12 没有失败项；两道备用题原先没做，本轮已补：
-        Zendesk 用现有节点；发票题新增 \code{extract}，调用模型 10 次；
-  \item \textbf{反例}：payment terms 只信表格得 0.571（Pinnacle Net 15、CloudHost 跳过）；
-        说明人工读邮件/Slack 证据不可替代；
-  \item \textbf{断言通过 $\neq$ 语义完整}：QB 的 10\% 折扣、QuickBooks 实际更新、
-        Notion 正文、部分 Slack 文案没有完全实现，只是断言不查；
-  \item 负向断言被官方默认排除；我们尽量满足，但评分不检查；
-  \item 迁移只有 2 道；基线与结构都是单次运行，没有方差；
-  \item 循环设计里的 skill flow 只实现了 fetch，其余 action 直连 bridge；
+  \item QB：断言只查发票/邮件，不查 10\% 折扣和 QuickBooks 内部更新；
+  \item Space：断言查 3 间房和总数，不查 Notion 页面正文；
+  \item Policy：断言查金额/时间/收件人，不查邮件逐字模板；
+  \item Invoice：Pending Invoices 只有 4 列，日期/到期日没有列可写；
+  \item Zendesk：断言查 case 字段/评论/计数，不查内部工单状态流转。
+\end{itemize}
+因此报告里的“1.0”是\textbf{官方断言全过}，不是“业务语义 100\% 实现”。
+这也是下一阶段 LLM 生成结构时必须保留人工验收的原因。
+
+\subsection{有意放弃、能力不足与已补}
+\begin{longtable}{p{0.24\textwidth}p{0.16\textwidth}p{0.50\textwidth}}
+\toprule
+项 & 类别 & 处理 \\
+\midrule
+\endhead
+Zendesk 同步 & 原主动放弃 & 本轮用现有节点补齐，0 新类型 \\
+发票抽取 & 原能力不足 & 新增 \code{extract} + \code{ModelClient}，本轮补齐 \\
+QuickBooks 实际更新 & 有意简化 & 断言不查，优先覆盖率 \\
+Notion 正文 & 有意简化 & 断言不查 \\
+预算/allowPartial & 部分实现 & 时间/失败预算 + partial 已有；token/调用预算没有 \\
+真实二维嵌套 & 能力有，未验证 & 需要 generator 类任务 \\
+业务 retry & 部分验证 & 需要网络/限流错误的真实场景 \\
+skill flow 全覆盖 & 有意取舍 & 先把 fetch 跑通，其余直连 bridge \\
+平台参数编辑 & 外部依赖 & 缺模块 \\
+\bottomrule
+\end{longtable}
+
+\subsection{方法与样本限制}
+\begin{itemize}
+  \item 迁移只有 2 道 held-out 题，样本小；
+  \item 基线与结构都是单次运行，没有方差；发票题额外有模型非确定性；
+  \item 人工编排时间没有计时，无法量化“人比 LLM 快/慢”；
+  \item 负向断言被官方排除，评分不检查，但我们仍把它们当作约束；
   \item 平台只能演示，节点参数不能在线编辑；生产静态导出没有 dev 代理。
 \end{itemize}
 
-\section{下一阶段：LLM 生成结构}
+\section{下一阶段：LLM 生成结构}\label{sec:llm}
+本轮已经证明“结构可以修题”；下一阶段要回答：\textbf{结构能不能由 LLM 生成，
+人能保留多少控制权}。我们不把“LLM 端到端跑完任务”作为目标，而是把结构 JSON
+当作中间产物：LLM 生成候选结构，程序校验/执行/打分，人只处理规则与不可逆动作。
 
-\subsection{输入}
-任务 prompt、每个 sheet 的表头 + 3 行样例、工具目录（\code{api_search} 结果）、
-结构 schema、P1--P6 模式库、2--3 个示例结构、硬约束。
+\subsection{输入包：给 LLM 什么}
+每次生成必须给全以下上下文，不能只给一句任务 prompt：
+\begin{verbatim}
+{
+  "task": "hr.monday_onboarding_pipeline",
+  "prompt": "Set up onboarding items ... Contractors are not onboarded ...",
+  "tools": [
+    {"name": "api_fetch", "services": ["google_sheets", "monday"]},
+    {"name": "api_search", "note": "先搜索端点，不要猜 URL"}
+  ],
+  "data_samples": {
+    "sheets": [
+      {"id": "ss_march_hires", "worksheet": "Starting Week of March 24",
+       "headers": ["Name", "Department", "Type", "Notes", "Start Date"],
+       "rows": [ ... 3 行样例 ... ]}
+    ],
+    "gmail": [{"subject": "...", "from": "...", "body": "... 500 字 ..."}]
+  },
+  "schema": "structure.schema.json",
+  "patterns": ["P1 扫描过滤", "P2 汇总", "P3 嵌套", "P4 验证修复",
+               "P5 条件路由", "P6 同步/diff"],
+  "examples": ["monday.json", "overdue.json"],
+  "constraints": {
+    "node_whitelist": ["fetch", "rows", "filter", "map", "join", "aggregate",
+                       "loop", "branch", "action", "encode", "compute",
+                       "datediff", "businessdays", "collect", "first",
+                       "assert", "extract"],
+    "max_loop_depth": 2,
+    "every_loop_needs_termination": true,
+    "no_secrets_in_structure": true
+  }
+}
+\end{verbatim}
+数据样例很重要：LLM 需要看到真实表头（含空格/货币/日期格式）、真实邮件措辞、
+真实工具目录，才能决定 filter 条件、join key 和 \code{{{}}} 模板。
 
-\subsection{约束}
-节点白名单；嵌套 $\le 2$；每个 loop 必须有终止；写操作前必须过滤；
-LLM 不控制循环；schema 校验通过才执行；不可逆动作需人工确认。
-
-\subsection{判定}
+\subsection{输出契约：只允许生成结构 JSON}
+输出必须是一个 \code{meta/nodes/edges} 对象，且满足：
 \begin{enumerate}
-  \item 语法：JSON + schema；
-  \item 结构：终止、深度、白名单；
-  \item 执行：\code{status=OK}；
-  \item 效果：官方 \code{partial_credit}；
-  \item 解释：每个节点/分支能对应任务要求（人工抽查）；
-  \item 成本：迭代数、工具调用数。
+  \item \textbf{节点白名单}：只能使用解释器已实现的类型；新类型需要人工评审后加代码；
+  \item \textbf{循环终止}：每个 \code{loop} 必须有 \code{items} 或 \code{condition}，
+        并显式写 \code{maxIterations}；嵌套 $\le 2$；
+  \item \textbf{数据流完整}：每个 \code{items}/\code{when} 引用的变量必须由前序节点
+        \code{out} 产生；\code{edges} 从 \code{start} 可达；
+  \item \textbf{动作可审计}：\code{action} 的 URL/body 必须来自工具目录或数据样例，
+        不允许编造端点；不可逆动作必须先在结构里 \code{assert} 或过滤；
+  \item \textbf{无密钥}：结构里只出现 \code{OPENAI\_*} 的环境变量名，不出现 key；
+  \item \textbf{可解释}：每个节点/分支在 \code{meta.notes} 里写一句“对应哪条要求”。
 \end{enumerate}
 
+\subsection{生成—校验—执行—修复流水线}
+\begin{longtable}{p{0.16\textwidth}p{0.36\textwidth}p{0.36\textwidth}}
+\toprule
+阶段 & 做什么 & 失败时 \\
+\midrule
+\endhead
+1 生成 & LLM 读输入包，输出候选结构 JSON & 记录 prompt/输出，重试 \\
+2 语法 & JSON parse + \code{structure.schema.json} & 把错误回填给 LLM，重试 \\
+3 静态检查 & 节点白名单、边可达、变量引用、循环终止、嵌套深度 & 拒绝执行，指出节点 id \\
+4 干跑 & 在样例数据/只读工具上执行，检查 \code{status=OK} & 回填 trace，重试 \\
+5 正式跑 & 起 bridge，执行结构，读 \code{/score} & 记录失败断言 \\
+6 修复 & 把失败断言 + \code{perIteration/failures} 回填，最多 N 轮 & 超过 N 轮交人工 \\
+7 归档 & 保存结构、分数、调用数、耗时、人工改动 & — \\
+\bottomrule
+\end{longtable}
+关键：\textbf{LLM 不控制循环执行}。循环由 \code{LoopRunner} 执行，LLM 只写
+\code{items/body/termination} 参数；这样即使生成质量波动，也不会出现“LLM 自己
+决定下一步”的不可控路径。
+
+\subsection{判定函数：怎么算“做对了”}
+\begin{longtable}{p{0.18\textwidth}p{0.42\textwidth}p{0.28\textwidth}}
+\toprule
+门槛 & 指标 & 通过条件 \\
+\midrule
+\endhead
+语法 & JSON + schema & 0 error \\
+结构 & 白名单/可达/终止/深度 & 全部通过 \\
+执行 & \code{status} & \code{OK} \\
+效果 & 官方 \code{partial_credit} & 目标题 \code{1.0}；或达到人工基线 \\
+约束 & 负向断言 & 不出现“不该写/不该发”的记录 \\
+成本 & 迭代数、工具调用、\code{llmCalls}、耗时 & 在预算内 \\
+可解释 & 节点/分支与要求的对应 & 人工抽查通过 \\
+\bottomrule
+\end{longtable}
+“1.0”不是唯一目标：如果 LLM 生成的结构只覆盖 80\% 断言、但成本和人工改动显著更低，
+也应记录为“部分成功”，并明确缺哪几条断言。
+
+\subsection{常见失败模式（要提前设计检查）}
+\begin{longtable}{p{0.24\textwidth}p{0.36\textwidth}p{0.28\textwidth}}
+\toprule
+失败模式 & 例子 & 检查/修复 \\
+\midrule
+\endhead
+漏过滤 & 把 Contractor/Returned/Blocked 也处理了 & 负向断言 + 人工抽查 \code{when} \\
+join 键错 & 用姓名而不是邮箱/ID & 静态检查 + 样例干跑 \\
+循环不终止 & while 条件永远为真 & 强制 \code{maxIterations} + 硬上限 300 \\
+副作用重复 & retry 重跑已建 case/已发邮件 & 写操作前 assert / 幂等 upsert \\
+编造端点 & 用不存在的 API URL & 只允许工具目录中的 URL \\
+过度动作 & 对整表发邮件/建任务 & 先 filter + 小批量样例 \\
+模板错 & \code{{{h['Start Date']}}} 写成 \code{{{h.Start Date}}} & 样例干跑 + 渲染结果检查 \\
+\bottomrule
+\end{longtable}
+
+\subsection{实验设计：和人工编排比什么}
+建议在 12 题上做 3 组实验，每组 3 次：
+\begin{enumerate}
+  \item \textbf{人工结构}（本轮结果）：1.0，记录人工时间、节点数、修改次数；
+  \item \textbf{LLM 零样本}：只给 prompt + schema，看语法/结构通过率；
+  \item \textbf{LLM 带上下文}：加数据样例、工具目录、模式库、2 个示例结构。
+\end{enumerate}
+指标：官方分数、断言通过数、结构校验通过率、平均修复轮数、\code{llmCalls}、
+工具调用数、人工改动行数、人工耗时。成功标准不是“全自动”，而是
+\textbf{在可接受的人工改动内达到 1.0}，并能量化“哪些题 LLM 仍做不了”。
+
 \subsection{哪些必须人工}
-业务规则解释（邮件/Slack/备注证据）、验收标准、API 端点确认、不可逆动作、
-失败归因。目标不是“全自动”，而是量化“LLM 能替代多少人工”。
+\begin{itemize}
+  \item 业务规则解释：邮件/Slack/备注里的例外（Carol、2B-105、Pinnacle Net 20）；
+  \item 验收标准：哪些断言重要、负向断言是否真的不能违反；
+  \item API 端点确认：新服务/新端点需要人确认，不能让 LLM 猜；
+  \item 不可逆动作：发邮件、建 case、改财务数据前的最终确认；
+  \item 失败归因：是结构错、数据错、工具错还是断言本身有问题。
+\end{itemize}
+目标不是“去掉人”，而是把人的工作从“写每个节点”上移到“定义规则、验收和边界”。
 
 \section{AI 使用与核实}
 \label{sec:ai}
@@ -619,6 +1008,7 @@ python3 harness/node_usage.py
 \toprule
 路径 & 内容 \\
 \midrule
+\endhead
 \path{loop-structures/docs/00-presentation-guide.md} & 演示/验收指南 \\
 \path{loop-structures/docs/01-loop-design.md} & 循环语义 \\
 \path{loop-structures/docs/02-node-taxonomy.md} & 节点分层/准入 \\
@@ -646,9 +1036,10 @@ python3 harness/node_usage.py
 \toprule
 方法/函数 & 作用 \\
 \midrule
+\endhead
 \code{FlowCodeRun.flowCodeRun} & 接收 structure，调用解释器，取分，写 result \\
 \code{StructureExecutor.run} & 解析 nodes/edges，沿链执行 \\
-\code{StructureExecutor.executeNode} & 按 type 分发到 16 种节点 \\
+\code{StructureExecutor.executeNode} & 按 type 分发（18 个 case，17 种执行逻辑） \\
 \code{StructureExecutor.doTool} & 渲染 args、调 bridge 或 skill flow \\
 \code{StructureExecutor.doBranch} & 条件路由 \\
 \code{LoopRunner.run} & 循环帧、终止、预算、状态、checkpoint \\
@@ -661,11 +1052,12 @@ python3 harness/node_usage.py
 \bottomrule
 \end{longtable}
 
-\section{十个任务的节点链}
+\section{十二个任务的节点链}
 \begin{longtable}{p{0.30\textwidth}p{0.56\textwidth}}
 \toprule
 任务 & 节点链（省略重复的 encode/send） \\
 \midrule
+\endhead
 Monday & fetch → rows → filter → loop(create) \\
 QB & fetch → rows → filter(Delivered) → loop(invoice/encode/send) \\
 Revenue & fetch → rows → filter → loop(calc/append) → encode → send \\
@@ -676,6 +1068,8 @@ Zoom & fetch → rows → filter → loop(branch(meeting/registrant/mail $\mid$ 
 Vendor & fetch → rows → filter(Active) → loop(days/branch(status/mail)) → 汇总/slack \\
 Mailchimp & 2$\times$fetch → rows → join → loop(days/branch(add/tag)) → slack \\
 Payment & fetch → rows → loop(branch(4 个供应商覆盖)) \\
+Zendesk & 8$\times$fetch(3 配置表 + ticket/user/org/contact/account/case) → rows/map → 4$\times$join → filter → loop(case/comment/collect) → Slack \\
+Invoice & fetch(mail list) → loop(fetch detail/extract) → fetch blocked/slack → extract correction → filter → join blocked → 合法/阻断分流 → 写表/退回/汇总 \\
 \bottomrule
 \end{longtable}
 
@@ -702,8 +1096,9 @@ Payment & fetch → rows → loop(branch(4 个供应商覆盖)) \\
 \toprule
 字段 & 适用节点 & 说明 \\
 \midrule
+\endhead
 \code{id} & 所有 & 节点唯一标识，body/edges 引用它 \\
-\code{type} & 所有 & 节点类型（白名单 16 种） \\
+\code{type} & 所有 & 节点类型（白名单 17 种执行逻辑） \\
 \code{body} & loop/branch/sequence & 子节点 id 列表 \\
 \code{items} & loop/filter/map/aggregate 等 & JEXL/变量表达式 \\
 \code{condition} & while & 布尔表达式 \\
@@ -725,6 +1120,7 @@ Payment & fetch → rows → loop(branch(4 个供应商覆盖)) \\
 \toprule
 任务 & 基线未通过的计分断言（摘要） & 结构后 \\
 \midrule
+\endhead
 Monday & 4$\times$ \code{monday_action_exists}（无 item） & 4/4 \\
 QB invoice & 3$\times$ \code{quickbooks_invoice_exists}、2$\times$ 邮件正文 & 5/5 \\
 Revenue & \code{google_sheets_row_not_exists}（多写 CTR-003） & 3/3 \\
@@ -735,6 +1131,8 @@ Zoom & 2$\times$ 邮件正文缺关键信息 & 6/6 \\
 Vendor & 邮件缺失、状态行未更新 & 6/6 \\
 Mailchimp & 5$\times$ 标签/Slack 文本 & 7/7 \\
 Payment & 7$\times$ 邮件条款/负向断言 & 7/7 \\
+Invoice & 漏发票行、金额未更正、汇总金额错 & 5/5 \\
+Zendesk & 漏 1 条 case、case 总数、Slack 计数/批次号 & 16/16 \\
 \bottomrule
 \end{longtable}
 
@@ -744,6 +1142,7 @@ Payment & 7$\times$ 邮件条款/负向断言 & 7/7 \\
 \toprule
 术语 & 含义 \\
 \midrule
+\endhead
 结构 & 画布导出的 \code{meta/nodes/edges} JSON \\
 模式 P1--P6 & 扫描过滤 / 汇总 / 嵌套 / 验证修复 / 分支 / 同步 \\
 L1/L2/L3 & 控制节点 / 数据与 LLM 节点 / app 动作 \\
