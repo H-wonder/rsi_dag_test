@@ -2,6 +2,8 @@
 
 第三轮任务的提交仓库：**在原生不支持循环的 rsi-flow 平台上，定义循环语义、提炼可复用的结构与节点，并用 AutomationBench 的失败任务验证。**
 
+提交仓库：https://github.com/H-wonder/rsi_dag_test
+
 本仓库保存结构 JSON、解释器说明、实验证据和报告；四个项目的代码改动分别在各自的
 `feature-wonder` 分支（`rsi-flow` 引擎本身未改）。
 
@@ -221,7 +223,8 @@ reports/     报告 PDF 与 LaTeX 源
 - [x] 失败反馈与限制：[docs/10-limitations.md](docs/10-limitations.md)
 - [x] LLM 生成契约：[docs/06-llm-generation.md](docs/06-llm-generation.md)
 - [x] 报告 PDF：`reports/Round3-Loop-Structures-Report.pdf`
-- [ ] 提交（GitHub 推送与协作者邀请，按当前选择暂缓）
+- [x] 提交仓库：https://github.com/H-wonder/rsi_dag_test
+      （若为私有仓库，需按任务要求邀请 5 位协作者）
 
 ## 已知限制
 
