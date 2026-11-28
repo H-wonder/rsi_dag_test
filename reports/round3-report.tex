@@ -732,9 +732,10 @@ reasoningEffort/out/required/validate/retries}。执行时渲染模板、调用 
   \item \code{compute/datediff/join}：2 题；
   \item \code{businessdays}：1 题（控制原语，参数无法表达，符合准入规则）。
 \end{itemize}
-补两道备用题后共 194 个节点实例、13 种类型：Zendesk 48 个实例、0 新类型；
-发票题 38 个实例、只新增 \code{extract}。\code{extract} 和 \code{businessdays}
-一样是语义/控制原语，不是某道题的参数。
+补两道备用题后共 194 个节点实例、17 种类型，15/17 种类型被 ≥2 题使用（88\%）：
+相对主任务多用了 \code{map/first/assert/aggregate/extract} 五种主任务未用到的类型，
+其中只有 \code{extract} 是为本轮新写的节点实现，其余四种原本已在解释器中。
+\code{extract} 和 \code{businessdays} 一样是语义/控制原语，不是某道题的参数。
 
 \section{长序列与循环测试}
 

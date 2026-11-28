@@ -16,7 +16,7 @@
 - 平台：12 题全部从 `rsi-flow-platform` 点“运行”跑通，每题一张截图
   （[platform-runs.csv](results/platform-runs.csv)）；
 - 方法复用：消融 2 题 + held-out 迁移 2 题；10 主任务 108 实例 / 12 类型 / 92% 复用；
-- 报告：[reports/Round3-Loop-Structures-Report.pdf](reports/Round3-Loop-Structures-Report.pdf)（23 页）。
+- 报告：[reports/Round3-Loop-Structures-Report.pdf](reports/Round3-Loop-Structures-Report.pdf)（24 页）。
 
 ## 核心结论
 
