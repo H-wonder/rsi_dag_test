@@ -55,7 +55,8 @@ loop-structures/
 ├── rsi-data-platform/          前端（完整可安装）
 ├── rsi-data-visual/            画布库（前端依赖，未改源码）
 ├── rsi-flow/                   rsi-flow 引擎（未改源码）
-├── automationbench/            AutomationBench 源码子集（bridge 使用）
+├── automationbench/            AutomationBench 完整依赖包（bridge 使用）
+├── cases/                      12 条案例（前端/后端/结果/为什么）
 ├── bridge/world_bridge.py      bridge 入口
 ├── structures/                 12 题结构 + 消融/迁移/skill/压力测试
 ├── harness/                    跑分、平台批量运行、统计
@@ -74,8 +75,9 @@ loop-structures/
 - Node.js 24 + pnpm 9（前端）
 - Python 3.13 + uv（bridge，可选）
 
-本仓库已经带有 bridge 需要的 `automationbench/` 源码子集和 12 道题的任务定义，
-第一次 `uv run` 会自动建虚拟环境并安装依赖。
+本仓库带有 bridge 需要的 `automationbench/` 完整依赖包，第一次 `uv run` 会自动建虚拟环境并安装依赖。
+包里仍然包含 AutomationBench 的其他任务定义，但它们不参与 `cases/` 的 12 条案例，也不影响评分；
+`cases/` 才是我们单独抽出的 12 条（10 主 + 2 备用）。暂不裁剪数据集，避免改 bridge。
 
 ### 最短启动顺序（三个终端，均从仓库根目录开始）
 
