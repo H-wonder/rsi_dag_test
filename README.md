@@ -96,9 +96,10 @@ java -jar core-starter/target/core-starter-1.0.0-executable.jar \
   --eureka.client.fetch-registry=false
 ```
 
-默认端口 `39910`。仓库自带 `libs/maven-repo/`，不需要私有 Nexus 权限。
-数据库默认是 `flowtest / flowtest / flowtest`，可用
-`SPRING_DATASOURCE_URL/USERNAME/PASSWORD` 覆盖。
+默认端口 `39910`。如果拿到学长提供的内网 `settings.xml`，构建时加
+`-s /path/to/settings.xml`；仓库自带 `libs/maven-repo/` 作为没有 settings 时的兜底。
+`settings.xml` 不要提交到仓库。数据库默认是 `flowtest / flowtest / flowtest`，
+可用 `SPRING_DATASOURCE_URL/USERNAME/PASSWORD` 覆盖。
 
 ### 2. 前端
 

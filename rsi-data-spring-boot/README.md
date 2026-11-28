@@ -46,6 +46,11 @@ export SPRING_DATASOURCE_PASSWORD=flowtest
 
 ```bash
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+# 如果拿到学长提供的内网 settings.xml（不要提交到仓库）：
+mvn -s /path/to/settings.xml -DskipTests package
+
+# 没有 settings.xml 也可以用仓库自带的 libs/maven-repo 尝试构建：
 mvn -DskipTests package
 ```
 
