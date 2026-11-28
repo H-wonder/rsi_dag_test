@@ -9,7 +9,7 @@
   "assertions_passed": 4,
   "assertions_total": 4,
   "iterations": 2,
-  "elapsed_seconds": 0.18,
+  "elapsed_seconds": 0.23,
   "run": {
     "task": "hr.monday_onboarding_pipeline",
     "bridge": "http://127.0.0.1:8765",
@@ -33,7 +33,7 @@
             "i": 1,
             "item": "{\"Name\":\"Tyrone Washington\",\"Department\":\"Sales\",\"Start Date\":\"2026-03-25\",\"Start_Date\":\"2026-03-25\",\"Location\":\"Remote\",\"Role\":\"Account Executive\",\"Type\":\"Full-time\",\"Notes\":\"\",\"_row\":3}",
             "status": "ok",
-            "ms": 2
+            "ms": 1
           }
         ],
         "status": "DONE",
@@ -216,5 +216,5 @@
       }
     ]
   },
-  "timestamp": "2026-11-26T20:43:58"
+  "timestamp": "2026-11-28T15:11:02"
 }

@@ -7,8 +7,8 @@
 
 | 位置 | 现状 | 证据 |
 |---|---|---|
-| `rsi-flow` 引擎 | `Executor` 是一个 `Queue<Source>`，按 routes 把节点入队、出队，跑完即止，**没有回边** | [Executor.java:80](../../rsi-flow/flow-core/src/main/java/cc/eamon/open/flow/core/stereotype/support/route/Executor.java#L80) |
-| 节点校验 | `FlowHolder`/`FlowNodeHolder` 在流程开始/节点结束时各校验一次，没有“每轮重新校验”的概念 | [FlowHolder.java:161](../../rsi-flow/flow-core/src/main/java/cc/eamon/open/flow/core/stereotype/execute/holder/FlowHolder.java#L161) |
+| `rsi-flow` 引擎 | `Executor` 是一个 `Queue<Source>`，按 routes 把节点入队、出队，跑完即止，**没有回边** | [Executor.java:80](../rsi-flow/flow-core/src/main/java/cc/eamon/open/flow/core/stereotype/support/route/Executor.java#L80) |
+| 节点校验 | `FlowHolder`/`FlowNodeHolder` 在流程开始/节点结束时各校验一次，没有“每轮重新校验”的概念 | [FlowHolder.java:161](../rsi-flow/flow-core/src/main/java/cc/eamon/open/flow/core/stereotype/execute/holder/FlowHolder.java#L161) |
 | 画布 | `rsi-flow-visual` / `rsi-flow-platform` 只有元素和连线，没有循环容器、没有回边语义 | 平台源码中无 loop 相关实现 |
 
 结论：循环不能靠“画一条回去的线”实现，必须在**结构层**定义一种显式的循环节点，由解释器执行。

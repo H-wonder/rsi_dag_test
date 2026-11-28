@@ -7,3 +7,5 @@ reports/*.aux
 reports/*.out
 reports/*.toc
 reports/round3-report.pdf
+
+automationbench/.venv/

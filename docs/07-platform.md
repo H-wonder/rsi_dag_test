@@ -13,7 +13,7 @@
 | 连线 `fromElementId → toElementId` | 一条 `edges` |
 | 连线 `pendant.edge === false` | 仅视觉（如 loop body），不进入 edges |
 
-示例：[rsi-flow-platform/src/xpages/Login/test/loop_monday_test.tsx](../../rsi-flow-platform/src/xpages/Login/test/loop_monday_test.tsx)
+示例：[buildTest.tsx](../rsi-data-platform/src/xpages/Login/test/buildTest.tsx)、[structures.ts](../rsi-data-platform/src/xpages/Login/test/structures.ts)
 
 ```text
 fetch ── rows ── pick ── loop1
@@ -22,7 +22,7 @@ fetch ── rows ── pick ── loop1
 
 ## 2. 运行按钮
 
-[Login/index.tsx](../../rsi-flow-platform/src/xpages/Login/index.tsx) 的 `runStructure`：
+[Login/index.tsx](../rsi-data-platform/src/xpages/Login/index.tsx) 的 `runStructure`：
 
 1. `getView(diagramRef)` 取当前画布；
 2. 从元素的 `pendant.node` 收集 `nodes`；
@@ -80,7 +80,7 @@ rc-util` 会读取 `element.ref`；React 19 把 `ref` 移进 `props`，读取 `e
 处理：
 - 用 pnpm patch 修 `rc-util` 的 `getNodeRef`、`rc-trigger` 的 `child.ref`、
   `rc-align` 的 `childNode.ref`：React 19 下改读 `props.ref`；
-- patch 文件在 [patches/](../../rsi-flow-platform/patches/)，已写入
+- patch 文件在 [patches/](../rsi-data-platform/patches/)，已写入
   `pnpm.patchedDependencies`，`pnpm install --frozen-lockfile` 可复现；
 - 同时把 `Login/index.tsx` 的首次 `setView` 延迟到 `?task=` 同步之后，
   避免连续两次 `setView` 造成画布状态竞争。
@@ -89,7 +89,7 @@ rc-util` 会读取 `element.ref`；React 19 把 `ref` 移进 `props`，读取 `e
 控制台 `element.ref` 出现次数为 0，bridge 分数 1.0；发票题同样从 UI 跑出 1.0。
 如果浏览器仍显示旧警告，硬刷新（Ctrl+Shift+R）或重开标签页，清掉旧的 dev chunk。
 
-画布由 [buildTest.tsx](../../rsi-flow-platform/src/xpages/Login/test/buildTest.tsx) 从结构 JSON 生成：
+画布由 [buildTest.tsx](../rsi-data-platform/src/xpages/Login/test/buildTest.tsx) 从结构 JSON 生成：
 主链从左到右，循环体/分支体放在下方并用 `edge: false` 的连线表示。
 
 `getView` 会保留元素 `pendant` 里的自定义字段，因此 `node` / `meta` / `edge` 能原样带回。

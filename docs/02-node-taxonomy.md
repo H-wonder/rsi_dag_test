@@ -49,7 +49,7 @@
 > `datediff`、`businessdays`、`collect`、`first`、**`extract`** 已实现；
 > `fanout`、`classify`、`dedupe` 仍为计划。
 > `extract` 用于发票题：`prompt` + `schema` + `validate` + `retries`，
-> 实现见 [StructureExecutor#L447](../../rsi-flow-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447)。
+> 实现见 [StructureExecutor#L447](../rsi-data-spring-boot/core-flow/src/main/java/com/horsecoder/common/whuTalent/core/flow/Run/structure/StructureExecutor.java#L447)。
 
 ### L1 控制
 
