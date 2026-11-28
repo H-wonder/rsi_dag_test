@@ -77,6 +77,34 @@ loop-structures/
 本仓库已经带有 bridge 需要的 `automationbench/` 源码子集和 12 道题的任务定义，
 第一次 `uv run` 会自动建虚拟环境并安装依赖。
 
+### 最短启动顺序（三个终端，均从仓库根目录开始）
+
+```bash
+# 终端 1：后端
+cd rsi-data-spring-boot
+docker compose up -d mysql
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+mvn -s /path/to/settings.xml -DskipTests package
+java -jar core-starter/target/core-starter-1.0.0-executable.jar \
+  --spring.profiles.active=test \
+  --eureka.client.register-with-eureka=false \
+  --eureka.client.fetch-registry=false
+
+# 终端 2：前端（新开终端，从仓库根目录）
+cd rsi-data-platform
+pnpm install --frozen-lockfile
+pnpm dev
+
+# 终端 3：bridge（新开终端，从仓库根目录）
+uv run --project automationbench python bridge/world_bridge.py \
+  --domain hr \
+  --task hr.monday_onboarding_pipeline \
+  --port 8765
+```
+
+没有内网 `settings.xml` 时，去掉 `-s /path/to/settings.xml`；仓库里的
+`libs/maven-repo/` 会作为兜底。`settings.xml` 不要提交。
+
 ### 1. 后端
 
 ```bash
