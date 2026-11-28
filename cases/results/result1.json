@@ -1,0 +1,12 @@
+{
+  "case": 1,
+  "task": "hr.monday_onboarding_pipeline",
+  "baseline_score": 0.0,
+  "structured_score": 1.0,
+  "assertions_passed": 4,
+  "assertions_total": 4,
+  "iterations": 2,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

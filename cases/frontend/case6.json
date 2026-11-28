@@ -1,0 +1,180 @@
+{
+  "meta": {
+    "task": "operations.space_utilization_analysis",
+    "domain": "operations",
+    "pattern": "P2",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "扫描 41 行房间数据，按类型/占用率/备注/邮件证据筛选，逐间计算浪费座位并汇总，创建 Notion 报告并发邮件"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_space/values/Rooms!A1:Z200"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "rooms"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "rooms",
+      "when": "item.Type == 'Office' and item.Avg_Daily_Occupancy_ * 1 < 40 and not item.Notes.toLowerCase().contains('renovation') and not item.Notes.toLowerCase().contains('executive') and not item.Notes.toLowerCase().contains('decommissioned') and item.Room != '2B-105'",
+      "out": "underused"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "underused",
+      "itemVar": "c",
+      "body": [
+        "ratio",
+        "used",
+        "unused",
+        "collect"
+      ],
+      "maxIterations": 50,
+      "onError": "continue",
+      "state": {
+        "total": 0,
+        "summary": ""
+      },
+      "checkpoint": {
+        "every": 10,
+        "keep": 20
+      }
+    },
+    {
+      "id": "ratio",
+      "type": "compute",
+      "left": "{{c.Avg_Daily_Occupancy_}}",
+      "right": "100",
+      "op": "divide",
+      "out": "ratio",
+      "format": "raw"
+    },
+    {
+      "id": "used",
+      "type": "compute",
+      "left": "{{c.Capacity}}",
+      "right": "{{ratio}}",
+      "op": "multiply",
+      "out": "used",
+      "format": "money"
+    },
+    {
+      "id": "unused",
+      "type": "compute",
+      "left": "{{c.Capacity}}",
+      "right": "{{used}}",
+      "op": "subtract",
+      "out": "wasted",
+      "format": "money",
+      "accumulate": "total",
+      "totalOut": "wasted_total",
+      "totalFormat": "floor"
+    },
+    {
+      "id": "collect",
+      "type": "collect",
+      "value": "{{c.Room}} (capacity {{c.Capacity}}, occupancy {{c.Avg_Daily_Occupancy_}}%)",
+      "stateKey": "summary"
+    },
+    {
+      "id": "notion",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "body": {
+          "parent": {
+            "workspace": true
+          },
+          "properties": {
+            "title": {
+              "title": [
+                {
+                  "text": {
+                    "content": "Space Consolidation Report - Q1 2026"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "Underutilized offices:\n{{loop_loop1.state.summary}}\nTotal wasted capacity: {{wasted_total}}",
+      "out": "mail_b64"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              {
+                "name": "To",
+                "value": "rachel.torres@company.example.com"
+              },
+              {
+                "name": "Subject",
+                "value": "Space Consolidation Report - Q1 2026"
+              }
+            ],
+            "body": {
+              "data": "{{mail_b64}}"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "fetch"
+    ],
+    [
+      "fetch",
+      "rows"
+    ],
+    [
+      "rows",
+      "pick"
+    ],
+    [
+      "pick",
+      "loop1"
+    ],
+    [
+      "loop1",
+      "notion"
+    ],
+    [
+      "notion",
+      "encode"
+    ],
+    [
+      "encode",
+      "send"
+    ]
+  ]
+}

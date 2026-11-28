@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "task": "finance.qb_invoice_from_orders",
+    "domain": "finance",
+    "pattern": "P1",
+    "bridge": "http://127.0.0.1:8765",
+    "description": "读取订单表，只取 Delivered，逐单建 QuickBooks 发票并按客户发邮件"
+  },
+  "nodes": [
+    {
+      "id": "fetch",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_orders/values/February 2026!A1:Z100"
+      },
+      "out": "sheet"
+    },
+    {
+      "id": "rows",
+      "type": "rows",
+      "items": "{{sheet.values}}",
+      "out": "orders"
+    },
+    {
+      "id": "pick",
+      "type": "filter",
+      "items": "orders",
+      "when": "item.Status == 'Delivered'",
+      "out": "due"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "due",
+      "itemVar": "o",
+      "body": ["invoice", "encode", "send"],
+      "maxIterations": 20,
+      "onError": "continue"
+    },
+    {
+      "id": "invoice",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://quickbooks.api.intuit.com/v3/company/1/invoice",
+        "body": {
+          "CustomerRef": { "value": "{{o.Customer}}" },
+          "Line": [
+            {
+              "DetailType": "SalesItemLineDetail",
+              "Amount": "{{o['Unit Price']}}"
+            }
+          ],
+          "PrivateNote": "{{o['Order #']}}"
+        }
+      }
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "Order {{o['Order #']}} total {{o['Unit Price']}}",
+      "out": "body_b64"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              { "name": "To", "value": "{{o['Customer Email']}}" },
+              { "name": "Subject", "value": "Invoice {{o['Order #']}}" }
+            ],
+            "body": { "data": "{{body_b64}}" }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch"],
+    ["fetch", "rows"],
+    ["rows", "pick"],
+    ["pick", "loop1"]
+  ]
+}

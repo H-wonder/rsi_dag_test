@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "task": "sales.overdue_followup_flag",
+    "domain": "sales",
+    "pattern": "P5",
+    "bridge": "http://127.0.0.1:8765",
+    "today": "2026-02-26",
+    "description": "按工作日规则判断逾期；Completed 需有完成备注；有 extension 备注的豁免；逐条建 OVERDUE 任务并汇总邮件"
+  },
+  "nodes": [
+    {
+      "id": "fetch_tasks",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": { "q": "SELECT Id, Subject, Status, Description, ActivityDate, OwnerId, WhatId FROM Task" }
+      },
+      "out": "tasks"
+    },
+    {
+      "id": "fetch_accounts",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": { "q": "SELECT Id, Name FROM Account" }
+      },
+      "out": "accounts"
+    },
+    {
+      "id": "fetch_notes",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/query",
+        "params": { "q": "SELECT Id, Title, Body, ParentId FROM Note" }
+      },
+      "out": "notes"
+    },
+    {
+      "id": "ext_notes",
+      "type": "filter",
+      "items": "{{notes.records}}",
+      "when": "item.Body.toLowerCase().contains('extension')",
+      "out": "ext_notes"
+    },
+    {
+      "id": "join_acc",
+      "type": "join",
+      "items": "{{tasks.records}}",
+      "with": "{{accounts.records}}",
+      "leftKey": "WhatId",
+      "rightKey": "Id",
+      "fields": { "account_name": "Name" },
+      "out": "tasks_joined"
+    },
+    {
+      "id": "join_ext",
+      "type": "join",
+      "items": "tasks_joined",
+      "with": "ext_notes",
+      "leftKey": "Id",
+      "rightKey": "ParentId",
+      "setFound": "has_extension",
+      "out": "tasks_ready"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "tasks_ready",
+      "itemVar": "t",
+      "body": ["days", "route"],
+      "maxIterations": 50,
+      "onError": "continue",
+      "state": { "summary": "" }
+    },
+    {
+      "id": "days",
+      "type": "businessdays",
+      "from": "{{t.ActivityDate}}",
+      "to": "{{meta.today}}",
+      "out": "bdays"
+    },
+    {
+      "id": "route",
+      "type": "branch",
+      "cases": [
+        {
+          "when": "(t.Status != 'Completed' or not t.Description.startsWith('Completed:')) and not t.has_extension and bdays > 3",
+          "body": ["flag", "collect"]
+        }
+      ],
+      "default": []
+    },
+    {
+      "id": "flag",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://yourinstance.salesforce.com/services/data/v61.0/sobjects/Task",
+        "body": {
+          "Subject": "OVERDUE: {{t.Subject}}",
+          "Priority": "High",
+          "Status": "Not Started",
+          "Description": "Overdue follow-up for {{t.account_name}} — {{t.Subject}}",
+          "OwnerId": "{{t.OwnerId}}"
+        }
+      }
+    },
+    {
+      "id": "collect",
+      "type": "collect",
+      "value": "{{t.account_name}} — {{t.Subject}}",
+      "stateKey": "summary"
+    },
+    {
+      "id": "encode",
+      "type": "encode",
+      "value": "Overdue follow-ups:\n{{loop_loop1.state.summary}}",
+      "out": "mail_b64"
+    },
+    {
+      "id": "send",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "body": {
+          "payload": {
+            "headers": [
+              { "name": "To", "value": "ops-team@crestline.example.com" },
+              { "name": "Subject", "value": "Overdue follow-ups" }
+            ],
+            "body": { "data": "{{mail_b64}}" }
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch_tasks"],
+    ["fetch_tasks", "fetch_accounts"],
+    ["fetch_accounts", "fetch_notes"],
+    ["fetch_notes", "ext_notes"],
+    ["ext_notes", "join_acc"],
+    ["join_acc", "join_ext"],
+    ["join_ext", "loop1"],
+    ["loop1", "encode"],
+    ["encode", "send"]
+  ]
+}

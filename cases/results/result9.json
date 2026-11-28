@@ -1,0 +1,12 @@
+{
+  "case": 9,
+  "task": "operations.mailchimp_ecommerce_sync",
+  "baseline_score": 0.7142857142857143,
+  "structured_score": 1.0,
+  "assertions_passed": 7,
+  "assertions_total": 7,
+  "iterations": 7,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

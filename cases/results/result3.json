@@ -1,0 +1,12 @@
+{
+  "case": 3,
+  "task": "finance.revenue_recognition",
+  "baseline_score": 0.75,
+  "structured_score": 1.0,
+  "assertions_passed": 3,
+  "assertions_total": 3,
+  "iterations": 2,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

@@ -1,0 +1,12 @@
+{
+  "case": 8,
+  "task": "finance.vendor_insurance_verification",
+  "baseline_score": 0.8333333333333334,
+  "structured_score": 1.0,
+  "assertions_passed": 6,
+  "assertions_total": 6,
+  "iterations": 4,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

@@ -1,0 +1,12 @@
+{
+  "case": 2,
+  "task": "finance.qb_invoice_from_orders",
+  "baseline_score": 0.0,
+  "structured_score": 1.0,
+  "assertions_passed": 5,
+  "assertions_total": 5,
+  "iterations": 3,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

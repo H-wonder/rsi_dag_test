@@ -1,0 +1,12 @@
+{
+  "case": 11,
+  "task": "support.zendesk_sf_case_sync",
+  "baseline_score": 0.75,
+  "structured_score": 1.0,
+  "assertions_passed": 16,
+  "assertions_total": 16,
+  "iterations": 5,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

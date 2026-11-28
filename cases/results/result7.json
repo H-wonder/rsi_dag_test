@@ -1,0 +1,12 @@
+{
+  "case": 7,
+  "task": "hr.zoom_orientation_sessions",
+  "baseline_score": 0.6666666666666666,
+  "structured_score": 1.0,
+  "assertions_passed": 6,
+  "assertions_total": 6,
+  "iterations": 3,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}

@@ -1,0 +1,12 @@
+{
+  "case": 10,
+  "task": "finance.payment_terms_tracking",
+  "baseline_score": 0.0,
+  "structured_score": 1.0,
+  "assertions_passed": 7,
+  "assertions_total": 7,
+  "iterations": 5,
+  "status": "OK",
+  "llmCalls": 0,
+  "failed_assertions": []
+}
