@@ -9,3 +9,5 @@ reports/*.toc
 reports/round3-report.pdf
 
 automationbench/.venv/
+
+docs/

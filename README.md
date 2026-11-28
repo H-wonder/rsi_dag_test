@@ -39,15 +39,13 @@
 ## 核心结论
 
 1. 平台没有循环：`Executor` 是 DAG 队列，画布没有循环容器；
-2. 循环是**结构层的显式节点**，由解释器执行，语义契约见
-   [docs/01-loop-design.md](docs/01-loop-design.md)；
-3. 节点分三层（控制 / 数据与 LLM / app 动作），业务规则参数化，见
-   [docs/02-node-taxonomy.md](docs/02-node-taxonomy.md)；
-4. 结构归纳为 6 个模式，配一张选择决策树，见
-   [docs/03-patterns.md](docs/03-patterns.md)；
-5. 问题清单、前后对照、失败原因分别见
-   [docs/problems.md](docs/problems.md)、[docs/09-results.md](docs/09-results.md)、
-   [docs/10-limitations.md](docs/10-limitations.md)。
+2. 循环是**结构层的显式节点**，由解释器执行，语义见报告第 4 节；
+3. 节点分三层（控制 / 数据与 LLM / app 动作），业务规则参数化，见报告第 5.5 节；
+4. 结构归纳为 6 个模式，配一张选择决策树，见报告第 6 节；
+5. 问题清单、前后对照、失败原因见报告第 2、6、9 节和 `results/before-after.csv`。
+
+> 设计文档（00–12、problems）不随代码仓库提交，保存在本地
+> `notes/loop-structures-docs-2026-11-28/`；报告 PDF 内含主要设计、验收证据和代码走读摘要。
 
 ## 仓库结构
 
@@ -59,7 +57,6 @@ loop-structures/
 ├── rsi-flow/                   rsi-flow 引擎（未改源码）
 ├── automationbench/            AutomationBench 源码子集（bridge 使用）
 ├── bridge/world_bridge.py      bridge 入口
-├── docs/                       设计、代码走读、结果与限制
 ├── structures/                 12 题结构 + 消融/迁移/skill/压力测试
 ├── harness/                    跑分、平台批量运行、统计
 ├── results/                    CSV、每题 JSON、12 张平台截图
@@ -212,7 +209,7 @@ python3 harness/run_structure.py \
 - 画布库：[rsi-data-visual](rsi-data-visual)（未改源码）
 - rsi-flow 引擎：[rsi-flow](rsi-flow)（未改源码）
 - bridge：[bridge/world_bridge.py](bridge/world_bridge.py)
-- 逐行代码走读：[docs/12-code-walkthrough.md](docs/12-code-walkthrough.md)
+- 逐行代码走读：报告附录与本地文档（不随仓库提交）
 
 ## 状态
 
@@ -234,10 +231,10 @@ python3 harness/run_structure.py \
 - [x] 第 11 题（备用）：`support.zendesk_sf_case_sync`，0.75 → **1.0**（16/16，0 新节点）
 - [x] 第 12 题（备用）：`finance.invoice_email_extract`，0.40 → **1.0**（5/5，`extract` + 10 次调用）
 - [x] 平台闭环：12 题全部从平台运行并得分（[platform-runs.csv](results/platform-runs.csv)）
-- [x] 长序列：120 轮压力测试 + 41 行真实任务，见 [docs/08-long-sequence.md](docs/08-long-sequence.md)
-- [x] 消融 2 题 + 迁移 2 题 + 节点统计：[docs/05-reuse.md](docs/05-reuse.md)
-- [x] 失败反馈与限制：[docs/10-limitations.md](docs/10-limitations.md)
-- [x] LLM 生成契约：[docs/06-llm-generation.md](docs/06-llm-generation.md)
+- [x] 长序列：120 轮压力测试 + 41 行真实任务，见报告第 8 节
+- [x] 消融 2 题 + 迁移 2 题 + 节点统计：报告第 7 节
+- [x] 失败反馈与限制：报告第 9 节
+- [x] LLM 生成契约：报告第 10 节
 - [x] 报告 PDF：`reports/Round3-Loop-Structures-Report.pdf`
 - [x] 提交仓库：https://github.com/H-wonder/rsi_dag_test
 
